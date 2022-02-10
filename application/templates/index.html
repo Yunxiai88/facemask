@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% for message in get_flashed_messages() %}
+    <div class="alert alert-info">
+    {{ message }}
+    </div>
+{% endfor %}
+
+<div class="main_content">
+    <div class="container custom-contain">
+        <div class="row"> &nbsp; </div>
+        <!-- Input Data -->
+        <div class="row">
+            <div class="col-7">
+                <textarea id="review" name="review" rows="5" cols="10" placeholder="Please Upload Images"></textarea>
+            </div>
+            <div class="col-5">
+                <button id="process" class="btn btn-primary" >Process</button>
+            </div>
+        </div>
+        <br>
+        <hr>
+    </div>
+</div>
+{% endblock %}

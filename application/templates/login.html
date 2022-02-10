@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% for message in get_flashed_messages() %}
+    <div class="alert alert-info">
+    {{ message }}
+    </div>
+{% endfor %}
+
+<div class="main_content">
+    <div class="wrapper fadeInDown">
+        <div id="formContent">
+            <!-- Icon -->
+            <div>
+                <img src="/static/img/icon.svg" id="icon" alt="Login Icon" />
+            </div>
+            
+            <!-- Login Form -->
+            <form method="post" action="/login">
+                <input type="text" id="login" name="login" placeholder="login">
+                <input type="text" id="password" name="login" placeholder="password">
+                <input type="submit" value="Log In">
+            </form>
+            
+            <!-- Remind Passowrd -->
+            <div id="formFooter">
+                <a class="underlineHover" href="#">Forgot Password?</a>
+            </div>
+        </div>
+      </div>
+</div>
+{% endblock %}

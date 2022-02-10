@@ -1,0 +1,6 @@
+ipython
+pandas
+matplotlib
+flask
+flask-login
+flask-sqlalchemy
