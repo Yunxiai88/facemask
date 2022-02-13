@@ -11,10 +11,7 @@ from flask import render_template, jsonify, flash
 from flask import Blueprint, Flask, request, redirect, send_from_directory
 from flask_login import login_required, current_user
 
-from application import create_app
-
-path = pathlib.Path(__file__)
-sys.path.append(os.path.join(str(path.parent.parent), "inference/"))
+from application import db, create_app
 
 ALLOWED_EXTENSIONS = {'png', 'jpg'}
 
@@ -30,9 +27,10 @@ def error():
     return render_template("error.html")
 
 @main.route("/")
+@login_required
 def index():
     # return the rendered template
-    return render_template("index.html")
+    return render_template("index.html", name=current_user.name)
 
 @main.route("/detail")
 def detail():

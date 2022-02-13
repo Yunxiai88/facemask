@@ -9,7 +9,7 @@
 {% endfor %}
 
 <div class="main_content">
-    <div class="wrapper fadeInDown">
+    <div class="wrapper fadeInDown login">
         <div id="formContent">
             <!-- Icon -->
             <div>
@@ -17,9 +17,9 @@
             </div>
             
             <!-- Login Form -->
-            <form method="post" action="/login">
-                <input type="text" id="login" name="login" placeholder="login">
-                <input type="text" id="password" name="login" placeholder="password">
+            <form method="POST" action="/login">
+                <input type="text" id="email" name="email" placeholder="login">
+                <input type="text" id="password" name="password" placeholder="password">
                 <input type="submit" value="Log In">
             </form>
             
