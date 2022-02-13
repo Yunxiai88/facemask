@@ -11,17 +11,25 @@
 <div class="main_content">
     <div class="container custom-contain">
         <div class="row"> &nbsp; </div>
+        
         <!-- Input Data -->
         <div class="row">
-            <div class="col-7">
+            <div class="col-6 offset-3">
                 <textarea id="review" name="review" rows="5" cols="10" placeholder="Please Upload Images"></textarea>
             </div>
-            <div class="col-5">
-                <button id="process" class="btn btn-primary" >Process</button>
-            </div>
+        </div>
+        <div class="col-12 text-center">
+                <button id="process" class="btn btn-primary" >Upload</button>
         </div>
         <br>
         <hr>
+
+        <!-- List Uploaded Images -->
+        <form method="POST" action="/load">
+            <div class="col-5">
+                <button type="submit" class="btn btn-primary" id="load">Loading Images</button>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}

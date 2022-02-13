@@ -13,9 +13,9 @@ from flask_login import login_required, current_user
 
 from application import db, create_app
 
-ALLOWED_EXTENSIONS = {'png', 'jpg'}
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
-#from application.utils import getFiles, loadUserInfo
+from application.util import getFiles
 
 database = []
 length = 0
@@ -88,16 +88,20 @@ def upload():
             flash('No allow file format')
             return redirect("/")
 
-@main.route('/getStudent', methods = ['POST', 'GET'])
-def getStudent():
+@main.route('/load', methods = ['POST', 'GET'])
+@login_required
+def load():
     if request.method == "POST":
-        id = request.form.get('students')
-        print("fetching images for [" + str(id) + "]")
+        #id = request.form.get('students')
+        #print("fetching images for [" + str(id) + "]")
 
         # Get images for selected user
-        #student_images = getFiles(id)
+        images = getFiles()
+        users = [['aaaa', 'bbbbb']]
+        print(images)
 
-        return redirect("/detail")
+        #return redirect("/detail")
+        return render_template("detail.html", data=images, users=users, len=length)
 
 # execute function
 if __name__ == '__main__':

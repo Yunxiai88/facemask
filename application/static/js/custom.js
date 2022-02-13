@@ -1,23 +1,4 @@
 $(document).ready(function () {
-    //topic selection
-    $(".dropdown-topic a").click(function(){
-        var selText = $(this).text();
-        $("#topic-text").text(selText);
-
-        var img = "/data/img/"+selText+".jpg?a=" + Math.random();
-        $("#img-a").attr("src", img);
-    });
-
-    //sentiment selection
-    $(".drapdown-sentiment a").click(function(){
-        var selText = $(this).text();
-        $("#sentiment-text").text(selText);
-
-        var val = $(this).attr("value")
-        var img = "/data/img/"+val+".jpg?a=" + Math.random();
-        $("#img-b").attr("src", img);
-    });
-
     $('#uploadForm').on('submit', function(event) {
         event.preventDefault();
 
