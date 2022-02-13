@@ -28,26 +28,27 @@
     </form>
 </div>
 
-<!-- Detail Table -->
-<div class="row">
-    <div class="table-responsive">
-        <table id="verticalScroll" class="table  table-bordered table-sm" cellspacing="0" width="100%" >
-            <tbody id="result">
-            </tbody>
-        </table>
+<div class="container-fluid text-center">
+    <div class="clearfix">
+        <button class="select"> </button>
+        <h1>select your photo</h1>
+        <button class="send" data-counter="0">✔</button>
     </div>
-</div>
 
-<div class="container-fluid bg-3 text-center">
-    <div class="row">
+    <div class="row img-grid">
         {% for im in data %} 
             <div class="col-sm-3 col-sm-offset-1">
-                <a href="#">
-                    <img src="{{ url_for('static', filename='img/')}}{{im}}" class="img-circle img-thumbnail" style="width:100%" alt="Image">
-                </a>
+                <li>
+                    <img src="{{ url_for('static', filename='processed/')}}{{im}}" class="img-circle img-thumbnail" style="width:100%" alt="Image">
+                </li>
             </div>
         {% endfor %}
     </div>
-</div>
+    
+    <br/>
 
+    <div class="text-right">
+        <button name="img_btn" class="btn btn-primary">Next</button>
+    </div>
+</div>
 {% endblock %}

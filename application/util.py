@@ -8,7 +8,7 @@ path = pathlib.Path(__file__)
 # fetch images for students
 def getFiles() :
     #file_path = "./data/" + str(folder_name)
-    file_path = "./application/static/img"
+    file_path = "./application/static/processed"
 
     file_list = []
     if not os.path.exists(file_path):
