@@ -8,23 +8,28 @@ Application used to mask faces base on uploaed image.
 * libraries like pandas, numpy
 
 ## Configuration
-* 1. create a virtual environment:   
+* 1. create a virtual environment:
     ```
     conda create -n facemask python=3.7
     ```
 
-* 2. activate newly created environment:   
+* 2. activate newly created environment:
     ```
     conda activate facemask
     ```
 
-* 3. In the virtual environment, Go to the project root folder and run below command to install packages:   
+* 3. In the virtual environment, Go to the project root folder and run below command to install packages:
     ```
     pip install -r requirements.txt  
     ```
 
-     If any packages fail to install, try installing individually      
-     If any errors, try to do this one more time to avoid packages being missed out   
+     If any packages fail to install, try installing individually
+     If any errors, try to do this one more time to avoid packages being missed out
+
+* 4. Create Tables
+    ```python
+    python create_table.py
+    ```
 
 ## Start web application
 ```python
