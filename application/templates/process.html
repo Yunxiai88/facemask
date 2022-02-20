@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% for message in get_flashed_messages() %}
+    <div class="alert alert-info">
+    {{ message }}
+    </div>
+{% endfor %}
+
+<div class="container-fluid text-center">
+    <div class="clearfix">
+        <h1>Processed Photos</h1>
+    </div>
+
+    <form id="downloadForm" action="/download" method="POST">
+        <div class="row img-grid">
+            {% for im in data %} 
+                <div class="col-sm-3 col-sm-offset-1">
+                    <li class="download">
+                        <img name ="{{im}}" src="{{ url_for('static', filename='processed/')}}{{im}}" class="img-circle img-thumbnail" style="width:100%" alt="Image">
+                    </li>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <br/>
+        <div class="col-12 text-center">
+            <button id="downloadBtn" name="downloadBtn" class="btn btn-primary" >Download</button>
+        </div>
+        <br>
+        <hr>
+    </form>
+</div>
+{% endblock %}

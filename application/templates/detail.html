@@ -35,20 +35,22 @@
         <button class="send" data-counter="0">✔</button>
     </div>
 
-    <div class="row img-grid">
-        {% for im in data %} 
-            <div class="col-sm-3 col-sm-offset-1">
-                <li>
-                    <img src="{{ url_for('static', filename='processed/')}}{{im}}" class="img-circle img-thumbnail" style="width:100%" alt="Image">
-                </li>
-            </div>
-        {% endfor %}
-    </div>
-    
-    <br/>
+    <form id="imageForm" action="filters" method="POST">
+        <div class="row img-grid">
+            {% for im in data %} 
+                <div class="col-sm-3 col-sm-offset-1">
+                    <li>
+                        <img name="{{im}}" src="{{ url_for('static', filename='processed/')}}{{im}}" class="img-circle img-thumbnail" style="width:100%" alt="Image">
+                    </li>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <br/>
 
-    <div class="text-right">
-        <button name="img_btn" class="btn btn-primary">Next</button>
-    </div>
+        <div class="text-right">
+            <button id="filterBtn" name="filterBtn" class="btn btn-primary">Next</button>
+        </div>
+    </form>
 </div>
 {% endblock %}

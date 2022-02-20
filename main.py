@@ -6,9 +6,13 @@ import pathlib
 import argparse
 import pandas as pd
 
+from glob import glob
+from io import BytesIO
+from zipfile import ZipFile
+
 from werkzeug.utils import secure_filename
 from flask import render_template, jsonify, flash
-from flask import Blueprint, Flask, request, redirect, send_from_directory
+from flask import Blueprint, Flask, request, redirect, send_file
 from flask_login import login_required, current_user
 
 from application import db, create_app
@@ -17,6 +21,7 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 from application.util import getFiles
 
+images = []
 database = []
 length = 0
 
@@ -46,14 +51,48 @@ def detail():
     # return the rendered template
     return render_template("detail.html", data=database, len=length)
 
-@main.route('/data/<path:filename>')
-def base_static(filename):
-    image_file = os.path.join(app.root_path + '/data/', filename)
-    # check whether file exist
-    if os.path.isfile(image_file):
-        return send_from_directory(app.root_path + '/data', filename)
-    else:
-        return send_from_directory(app.root_path + '/static/img', 'not_found.jpg')
+@main.route("/filters", methods=['POST'])
+def filters():
+    images = []
+
+    filterImages = request.form.get('filterImages')
+    if filterImages and len(filterImages) > 0:
+        images = filterImages.split(',')
+
+    print("filters --> ", images)
+
+    return render_template("mask.html", data=images)
+
+@main.route("/mask", methods=['POST'])
+def selected():
+    images = []
+
+    processedImages = request.form.get('processedImages')
+    if processedImages and len(processedImages) > 0:
+        images = processedImages.split(',')
+    
+    print("mask --> ", images)
+
+    return render_template("process.html", data=images)
+
+@main.route("/download", methods=['POST'])
+def download():
+    images = []
+
+    selectedImages = request.form.get('selectedImages')
+    images = selectedImages.split(',')
+
+    print("download --> ", images)
+
+    stream = BytesIO()
+    with ZipFile(stream, 'w') as zf:
+        for f in images:
+            file = os.path.join('application/static/processed/', f)
+            print('  add: ', os.path.basename(file))
+            zf.write(file, os.path.basename(file))
+    stream.seek(0)
+
+    return send_file(stream, as_attachment=True, attachment_filename='archive.zip')
 
 #---------------------------------------------------------------------
 #----------------------------Functions--------------------------------

@@ -1,4 +1,6 @@
 $(document).ready(function () {
+
+  // upload files
   $('#uploadForm').on('submit', function (event) {
     event.preventDefault();
 
@@ -47,7 +49,7 @@ $(document).ready(function () {
     counter();
   });
 
-  $('.select').click(function () {
+  $('.select').click(() => {
     if ($('li.selected').length == 0) {
       $('li').addClass('selected');
       $('.select').addClass('selected');
@@ -59,7 +61,67 @@ $(document).ready(function () {
     counter();
   });
 
-  //image pop up
+  $('#filterBtn').click(() => {
+    if ($('li.selected').length > 0) {
+      // form selected values
+      var value = []
+      $('li.selected').each(function() {
+        var imname = $(this).find('img').attr("name");
+        value.push(imname)
+      });
+
+      var doc = document.getElementById("imageForm");
+      // form a input element
+      var input = document.createElement('input')
+      input.type = 'hidden'
+      input.name = 'filterImages'
+      input.value = value
+      doc.appendChild(input)
+
+      doc.submit();
+    } else {
+      alert("Please select at least one image to process.");
+      return false
+    }
+  });
+
+  $('#maskBtn').click(() => {
+      var value = []
+      $('li.mask').each(function() {
+        var imname = $(this).find('img').attr("name");
+        value.push(imname)
+      });
+
+      var doc = document.getElementById("maskForm");
+      // form a input element
+      var input = document.createElement('input')
+      input.type = 'hidden'
+      input.name = 'processedImages'
+      input.value = value
+      doc.appendChild(input)
+
+      doc.submit();
+  });
+
+  $('#downloadBtn').click(() => {
+    var value = []
+    $('li.download').each(function() {
+      var imname = $(this).find('img').attr("name");
+      value.push(imname)
+    });
+
+    var doc = document.getElementById("downloadForm");
+    // form a input element
+    var input = document.createElement('input')
+    input.type = 'hidden'
+    input.name = 'selectedImages'
+    input.value = value
+    doc.appendChild(input)
+
+    doc.submit();
+});
+
+  //image popup
   $('.pop').on('click', function () {
     $('.imagepreview').attr('src', $(this).find('img').attr('src'));
     $('#imagemodal').modal('show');
