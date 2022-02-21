@@ -5,18 +5,22 @@ import pathlib
 
 path = pathlib.Path(__file__)
 
-# fetch images for students
 def getFiles() :
-    #file_path = "./data/" + str(folder_name)
     file_path = "./application/static/processed"
 
     file_list = []
+
     if not os.path.exists(file_path):
         print("folder for this user not exists")
     else:
+        count = 0
         for file in os.listdir(file_path):
-            #image_file = os.path.join(file_path, file)
+            # fetch max two images
+            if count >= 2:
+                break
+            
             file_list.append(file)
+            count += 1
     return file_list
 
 def allowed_file(filename):

@@ -1,9 +1,10 @@
 from . import db
+from . import login_manager
 from .models import User
+from datetime import datetime
 
 from flask import Blueprint, redirect, render_template, url_for, flash, request
-from flask_login import login_user, login_required, logout_user
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import login_user, login_required, logout_user, current_user
 
 auth = Blueprint('auth', __name__)
 
@@ -21,11 +22,18 @@ def login_post():
     user = User.query.filter_by(email=email).first()
 
     # check user info
-    if not user or not check_password_hash(user.password, password):
+    if not user or not user.check_password(password):
         flash('Please check your login details and try again.')
         return redirect(url_for('auth.login'))
 
     login_user(user, remember=remember)
+    flash('Logged in successfully.')
+
+    if current_user.is_authenticated:
+        current_user.last_login = datetime.now()
+        db.session.add(current_user) 
+        db.session.commit()
+
     return redirect(url_for('main.index'))
 
 @auth.route('/signup')
@@ -47,7 +55,8 @@ def signup_post():
         flash('Email address already exists')
         return redirect(url_for('auth.signup'))
 
-    new_user = User(email=email, name=name, password=generate_password_hash(password, method='sha256'))
+    new_user = User(email=email, name=name)
+    new_user.set_password(password)
     
     # add the new user to the database
     db.session.add(new_user)
@@ -59,4 +68,18 @@ def signup_post():
 @login_required
 def logout():
     logout_user()
+    return redirect(url_for('auth.login'))
+
+@login_manager.user_loader
+def load_user(user_id):
+    """Check if user is logged-in on every page load."""
+    if user_id is not None:
+        return User.query.get(user_id)
+    return None
+
+
+@login_manager.unauthorized_handler
+def unauthorized():
+    """Redirect unauthorized users to Login page."""
+    flash('You must be logged in to view that page.')
     return redirect(url_for('auth.login'))

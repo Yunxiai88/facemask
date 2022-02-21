@@ -23,7 +23,6 @@ from application.util import getFiles
 
 images = []
 database = []
-length = 0
 
 main = Blueprint('main', __name__)
 
@@ -34,24 +33,14 @@ def error():
 @main.route("/")
 @login_required
 def index():
-    # return the rendered template
-    return render_template("index.html", name=current_user.name)
-
-@main.route("/detail")
-def detail():
-    #database = loadUserInfo()
-    database = []
-    try:
-        database[0]
-    except IndexError:
-        return redirect("/error")
-
-    length = len(database)
+    images = getFiles()
+    print(images)
 
     # return the rendered template
-    return render_template("detail.html", data=database, len=length)
+    return render_template("index.html", data=images)
 
 @main.route("/filters", methods=['POST'])
+@login_required
 def filters():
     images = []
 
@@ -64,6 +53,7 @@ def filters():
     return render_template("mask.html", data=images)
 
 @main.route("/mask", methods=['POST'])
+@login_required
 def selected():
     images = []
 
@@ -76,6 +66,7 @@ def selected():
     return render_template("process.html", data=images)
 
 @main.route("/download", methods=['POST'])
+@login_required
 def download():
     images = []
 
@@ -126,21 +117,6 @@ def upload():
         else:
             flash('No allow file format')
             return redirect("/")
-
-@main.route('/load', methods = ['POST', 'GET'])
-@login_required
-def load():
-    if request.method == "POST":
-        #id = request.form.get('students')
-        #print("fetching images for [" + str(id) + "]")
-
-        # Get images for selected user
-        images = getFiles()
-        users = [['aaaa', 'bbbbb']]
-        print(images)
-
-        #return redirect("/detail")
-        return render_template("detail.html", data=images, users=users, len=length)
 
 # execute function
 if __name__ == '__main__':
