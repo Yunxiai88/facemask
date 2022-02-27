@@ -1,5 +1,12 @@
+#container {
+  display: flex;
+  flex-direction: column;
+  height: 90%
+}
+
 .main_content {
-    min-height: 700px;
+    min-height: 470px;
+    flex: 1 0 auto;
 }
 
 .nav-style {
@@ -12,6 +19,7 @@
     border-top-style: solid;
     border-top-width: 3px;
     border-top-color: red;
+    flex: 0 0 auto;
 }
 
 .custom-contain {
@@ -352,7 +360,193 @@ a.navbar-item:hover {
 	}
 	.navbar-end {
 		justify-content: flex-end;
-		margin-left: auto
+    margin-left: auto;
+    color: red;
   }
   /* navbar css definition end */
+
+  /* signup css definition start */
+  .block:not(:last-child),
+  .box:not(:last-child),
+  .content:not(:last-child),
+  .notification:not(:last-child),
+  .table-container:not(:last-child),
+  .title:not(:last-child) {
+    margin-bottom: 1.5rem
+  }
+  .box:not(:last-child),
+  .content:not(:last-child),
+  .box {
+    background-color: #fff;
+    border-radius: 6px;
+    box-shadow: 0 2px 3px rgb(10 10 10 / 10%), 0 0 0 1px rgb(10 10 10 / 10%);
+    color: #4a4a4a;
+    display: block;
+    padding: 1.25rem;
+  } 
+  .input.is-hovered, .input:hover {
+    border-color: #b5b5b5;
+  }
+
+  .input {
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    align-items: center;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    box-shadow: none;
+    display: inline-flex;
+    font-size: 1rem;
+    height: 2.25em;
+    justify-content: flex-start;
+    line-height: 1.5;
+    padding-bottom: calc(.375em - 1px);
+    padding-left: calc(.625em - 1px);
+    padding-right: calc(.625em - 1px);
+    padding-top: calc(.375em - 1px);
+    position: relative;
+    vertical-align: top
+  }
+  .input {
+    background-color: #fff;
+    border-color: #dbdbdb;
+    color: #363636;
+    box-shadow: inset 0 1px 2px rgba(10, 10, 10, .1);
+    max-width: 100%;
+    width: 100%
+  }
+  .input:active,
+  .input:focus {
+    outline: 0
+  }
+  .input::-moz-placeholder {
+    color: rgba(54, 54, 54, .3)
+  }
+  .input::-webkit-input-placeholder {
+    color: rgba(54, 54, 54, .3)
+  }
+  .input:-moz-placeholder {
+    color: rgba(54, 54, 54, .3)
+  }
+  .input:-ms-input-placeholder {
+    color: rgba(54, 54, 54, .3)
+  }
+  .input.is-active,
+  .input.is-focused,
+  .input:active,
+  .input:focus {
+    border-color: #3273dc;
+    box-shadow: 0 0 0 .125em rgba(50, 115, 220, .25)
+  }
+
+  .button.is-fullwidth {
+    display: flex;
+    width: 100%
+  }
+  .button.is-info {
+    background-color: #209cee;
+    border-color: transparent;
+    color: #fff
+  }
+  .button.is-info.is-hovered,
+  .button.is-info:hover {
+    background-color: #1496ed;
+    border-color: transparent;
+    color: #fff
+  }
+
+  .button.is-info.is-focused,
+  .button.is-info:focus {
+    border-color: transparent;
+    color: #fff
+  }
+
+  .button.is-info.is-focused:not(:active),
+  .button.is-info:focus:not(:active) {
+    box-shadow: 0 0 0 .125em rgba(32, 156, 238, .25)
+  }
+
+  .button.is-info.is-active,
+  .button.is-info:active {
+    background-color: #118fe4;
+    border-color: transparent;
+    color: #fff
+  }
+
+  .is-block {
+    display: block!important
+  }
+
+  .field:not(:last-child) {
+    margin-bottom: .75rem
+  }
+  .field.has-addons .control:not(:last-child) {
+    margin-right: -1px
+  }
+
+  .notification {
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    padding: 1.25rem 2.5rem 1.25rem 1.5rem;
+    position: relative
+  }
+
+  .notification.is-danger {
+    background-color: #ff3860;
+    color: #fff;
+  }
+
+  @media screen and (min-width:769px),
+  print {
+    .is-block-tablet {
+      display: block!important
+    }
+  }
+
+  .columns.is-mobile>.column.is-4 {
+    flex: none;
+    width: 33.33333%
+  }
+  
+  .columns.is-mobile>.column.is-offset-4 {
+    margin-left: 33.33333%
+  }
+  .column {
+    display: block;
+    flex-basis: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+    padding: 0.75rem;
+  }
+  
+  @media screen and (min-width:769px),
+  print {
+    .column.is-4,
+    .column.is-4-tablet {
+      flex: none;
+      width: 33.33333%
+    }
+    .column.is-offset-4,
+    .column.is-offset-4-tablet {
+      margin-left: 33.33333%
+    }
+    .column.is-4-touch {
+      flex: none;
+      width: 33.33333%
+    }
+    .column.is-offset-4-touch {
+      margin-left: 33.33333%
+    }
+  }
+
+  @media screen and (min-width:1088px) {
+    .column.is-4-desktop {
+      flex: none;
+      width: 33.33333%
+    }
+    .column.is-offset-4-desktop {
+      margin-left: 33.33333%
+    }
+  }
+  /* signup css definition start */
 }

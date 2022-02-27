@@ -17,11 +17,9 @@
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/fileinput.css') }}">
-
-    
 </head>
 
-<body>
+<body id="container">
     <div class="header">
         <nav class="navbar navbar-expand-sm nav-style">
             <div class="container-fluid">
@@ -33,9 +31,19 @@
             </div>
             <div id="navbarMenuHeroA" class="navbar-menu">
                 <div class="navbar-end">
+                    {% if current_user.is_authenticated %}
+                        <lable>welcome, {{current_user.name}}</lable>
+                    {% endif %}
+                    {% if current_user.is_authenticated and current_user.has_role("admin") %}
+                    <a href="{{ url_for('auth.admin') }}" class="navbar-item">
+                        Home
+                    </a>
+                    {% endif %}
+                    {% if current_user.is_authenticated and not current_user.has_role("admin") %}
                     <a href="{{ url_for('main.index') }}" class="navbar-item">
                         Home
                     </a>
+                    {% endif %}
                     {% if not current_user.is_authenticated %}
                     <a href="{{ url_for('auth.login') }}" class="navbar-item">
                         Login
@@ -55,17 +63,17 @@
     </div>
 
     <!-- Content -->
-    <div class="content">
+    <div class="main_content">
         {% block content %}
         {% endblock %}
-        <br />
-        <br />
     </div>
     <!-- END Content -->
 
+    {% block footer %}
     <div>
         <footer class="container-fluid text-center footer-style">
             <p>Copyright © 2022 National University of Singapore. All rights reserved.</p>
         </footer>
     </div>
+    {% endblock %}
 </body>

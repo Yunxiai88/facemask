@@ -1,5 +1,21 @@
 $(document).ready(function () {
 
+  $('#files').fileinput({
+    uploadUrl: '/upload',
+    theme : 'explorer-fas',
+    uploadAsync: false,
+    showRemove :true,
+    showPreview: true,
+    showCancel:true,
+    showCaption: true,
+    minFileCount: 1,
+    validateInitialCount: true,
+    allowedFileExtensions: ['jpg', 'png'],
+    browseClass: "btn btn-primary ",
+    dropZoneEnabled: true,
+    dropZoneTitle: 'Drag file here！',
+  });
+
   $('#faceFile').fileinput({
       uploadUrl: '/uploadFace',
       theme : 'explorer-fas',

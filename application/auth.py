@@ -1,6 +1,6 @@
 from . import db
 from . import login_manager
-from .models import User
+from .models import User, Role
 from datetime import datetime
 
 from flask import Blueprint, redirect, render_template, url_for, flash, request
@@ -11,6 +11,11 @@ auth = Blueprint('auth', __name__)
 @auth.route('/login')
 def login():
     return render_template('login.html')
+
+@auth.route("/admin")
+@login_required
+def admin():
+    return render_template("admin.html")
 
 @auth.route('/login', methods=['POST'])
 def login_post():
@@ -34,7 +39,10 @@ def login_post():
         db.session.add(current_user)
         db.session.commit()
 
-    return redirect(url_for('main.index'))
+    if current_user.has_role("admin"):
+        return redirect(url_for('auth.admin'))
+    else:
+        return redirect(url_for('main.index'))
 
 @auth.route('/signup')
 def signup():

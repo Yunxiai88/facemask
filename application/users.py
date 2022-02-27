@@ -1,5 +1,5 @@
 from . import db
-from .models import User
+from .models import User, Role, UserRoles
 from .models import FaceEmbedding
 
 def get_all_user():
