@@ -10,12 +10,10 @@
 
 <div class="container-fluid text-center">
     <div class="clearfix">
-        <button class="select"> </button>
-        <h1>Select Your Photo</h1>
-        <button class="send" data-counter="0">✔</button>
+        <h2>Select Your Photo</h2>
     </div>
 
-    <form id="imageForm" action="filters" method="POST">
+    <form id="imageForm" action="process" method="POST">
         <div class="row img-grid">
             {% for im in data %} 
                 <div class="col-sm-3 offset-2">
@@ -29,7 +27,7 @@
         <br/>
 
         <div class="text-right">
-            <button id="filterBtn" name="filterBtn" class="btn btn-primary">Next</button>
+            <button id="processBtn" name="processBtn" class="btn btn-primary">Next</button>
         </div>
     </form>
 </div>

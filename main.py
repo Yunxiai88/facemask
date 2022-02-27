@@ -4,22 +4,16 @@ import json
 import time
 import pathlib
 import argparse
-import pandas as pd
 
 from glob import glob
 from io import BytesIO
 from zipfile import ZipFile
 
-from werkzeug.utils import secure_filename
-from flask import render_template, jsonify, flash
-from flask import Blueprint, Flask, request, redirect, send_file
+from flask import Blueprint, Flask, jsonify, flash
+from flask import render_template, request, redirect, send_file, url_for
 from flask_login import login_required, current_user
 
-from application import db, create_app
-
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
-
-from application.util import getFiles
+from application import db, create_app, util, users
 
 images = []
 database = []
@@ -30,30 +24,39 @@ main = Blueprint('main', __name__)
 def error():
     return render_template("error.html")
 
+@main.route('/faceimage')
+def face_image():
+    return render_template('face_image.html')
+
 @main.route("/")
-@login_required
 def index():
-    images = getFiles()
-    print(images)
 
-    # return the rendered template
-    return render_template("index.html", data=images)
+    # check face image existing or not
+    if current_user.faceEmbedding:
+        images = util.get_file()
+        print(images)
 
-@main.route("/filters", methods=['POST'])
-@login_required
-def filters():
+        # return the rendered template
+        return render_template("index.html", data=images)
+    else:
+        return render_template("face_image.html")
+
+@main.route("/process", methods=['POST'])
+def process():
     images = []
 
-    filterImages = request.form.get('filterImages')
-    if filterImages and len(filterImages) > 0:
-        images = filterImages.split(',')
+    faceImages = request.form.get('faceImages')
+    if faceImages and len(faceImages) > 0:
+        images = faceImages.split(',')
 
-    print("filters --> ", images)
+    print("face image --> ", images)
 
-    return render_template("mask.html", data=images)
+    #TODO -- apply face image to mask group images
 
+    return render_template("process.html", data=images)
+
+#NO USE
 @main.route("/mask", methods=['POST'])
-@login_required
 def selected():
     images = []
 
@@ -66,7 +69,6 @@ def selected():
     return render_template("process.html", data=images)
 
 @main.route("/download", methods=['POST'])
-@login_required
 def download():
     images = []
 
@@ -88,35 +90,26 @@ def download():
 #---------------------------------------------------------------------
 #----------------------------Functions--------------------------------
 #---------------------------------------------------------------------
-@main.route('/upload',methods = ['POST', 'GET'])
-def upload():
+@main.route('/uploadFace',methods = ['POST'])
+def uploadFace():
     if request.method == "POST":
-        # check if the post request has the file part
-        if 'file' not in request.files:
-            flash('No file part')
-            return redirect("/")
-        
-        file = request.files['file']
-        # If the user does not select a file, the browser submits an
-        # empty file without a filename.
-        if file.filename == '':
-            flash('No selected file')  
-            return redirect("/")
+        isOk = True
+        files = request.files.getlist("faceFile")
 
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            
-            # TODO process batch file
-            result = ""
-            if result == "success":
-                flash('file uploaded and process successful.')
+        for file in files:
+            result = util.save_file(file)
+            if result == 1:
+                #TODO -- get face embending, then update to current user
+                users.save_faceEmbedding("11111111", current_user.id)
             else:
-                flash('file uploaded or process failed.')
-            return redirect("/")
+                isOk = False
+                break
+        
+        if isOk:
+            print('file uploaded successful.')
         else:
-            flash('No allow file format')
-            return redirect("/")
+            print('file uploaded failed.')
+        return jsonify({'message': "successful"})
 
 # execute function
 if __name__ == '__main__':

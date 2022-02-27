@@ -9,6 +9,8 @@ class User(UserMixin, db.Model):
     name = db.Column(db.String(1000))
     created_on = db.Column(db.DateTime, default=db.func.current_timestamp(), index=False, unique=False, nullable=True)
     last_login = db.Column(db.DateTime, index=False, unique=False, nullable=True)
+    # one-to-many
+    faceEmbedding = db.relationship('FaceEmbedding', backref='user', lazy=True)
 
     def set_password(self, password):
         """Create hashed password."""
@@ -20,3 +22,33 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return "<User {}>".format(self.username)
+
+class FaceEmbedding(db.Model):
+    __tablename__ = "face_embedding"
+
+    id = db.Column(db.Integer, primary_key=True)
+    embedding = db.Column(db.String(2000), primary_key=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    def __init__(self, embedding, user_id):
+        self.embedding = embedding
+        self.user_id = user_id
+
+class Photo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(100), unique=False, nullable=False)
+    filepath = db.Column(db.String(100), unique=False, nullable=False)
+
+    # one-to-many
+    photoEmbedding = db.relationship('PhotoEmbedding', backref='photo', lazy=True)
+
+class PhotoEmbedding(db.Model):
+    __tablename__ = "photo_embedding"
+
+    id = db.Column(db.Integer, primary_key=True)
+    embedding = db.Column(db.String(2000), primary_key=False)
+    photo_id = db.Column(db.String(100), db.ForeignKey('photo.id'))
+
+    def __init__(self, embedding, photo_id):
+        self.embedding = embedding
+        self.photo_id = photo_id

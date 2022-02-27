@@ -31,7 +31,7 @@ def login_post():
 
     if current_user.is_authenticated:
         current_user.last_login = datetime.now()
-        db.session.add(current_user) 
+        db.session.add(current_user)
         db.session.commit()
 
     return redirect(url_for('main.index'))
@@ -76,7 +76,6 @@ def load_user(user_id):
     if user_id is not None:
         return User.query.get(user_id)
     return None
-
 
 @login_manager.unauthorized_handler
 def unauthorized():

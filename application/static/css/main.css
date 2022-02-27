@@ -205,6 +205,7 @@ button.select:before, button.select:after {
 }
 
 button.select:after {
+  margin-top: 15px;
   content:  'unselect';
   opacity: 0;
 }
@@ -269,20 +270,89 @@ button.send.selected:after {
   100% { transform: rotate(360deg); }
 }
 
-table.dataTable thead .sorting:after,
-table.dataTable thead .sorting:before,
-table.dataTable thead .sorting_asc:after,
-table.dataTable thead .sorting_asc:before,
-table.dataTable thead .sorting_asc_disabled:after,
-table.dataTable thead .sorting_asc_disabled:before,
-table.dataTable thead .sorting_desc:after,
-table.dataTable thead .sorting_desc:before,
-table.dataTable thead .sorting_desc_disabled:after,
-table.dataTable thead .sorting_desc_disabled:before {
-    bottom: .5em;
-}
-
 .menu-size{
     height: 200px;
     overflow: scroll;
+}
+
+
+/* navbar css definition start */
+.navbar-menu {
+	display: none
+}
+
+.navbar-item {
+	color: #4a4a4a;
+	display: block;
+	line-height: 1.5;
+	padding: .5rem .75rem;
+	position: relative
+}
+
+.navbar-item .icon:only-child {
+	margin-left: -.25rem;
+	margin-right: -.25rem
+}
+
+a.navbar-item {
+	cursor: pointer
+}
+
+a.navbar-item.is-active,
+a.navbar-item:hover {
+	background-color: #fafafa;
+	color: #3273dc
+}
+
+.navbar-item {
+	display: block;
+	flex-grow: 0;
+	flex-shrink: 0
+}
+
+@media screen and (max-width:1087px) {
+	.navbar>.container {
+		display: block
+	}
+	.navbar-menu {
+		background-color: #fff;
+		box-shadow: 0 8px 16px rgba(10, 10, 10, .1);
+		padding: .5rem 0
+	}
+	.navbar-menu.is-active {
+		display: block
+	}
+}
+
+@media screen and (min-width:1088px) {
+	.navbar,
+	.navbar-end,
+	.navbar-menu,
+	.navbar-start {
+		align-items: stretch;
+		display: flex
+	}
+	.navbar {
+		min-height: 3.25rem
+	}
+	.navbar-item {
+		align-items: center;
+		display: flex
+	}
+	.navbar-item {
+		display: flex
+	}
+	.navbar-menu {
+		flex-grow: 1;
+		flex-shrink: 0
+	}
+	.navbar-start {
+		justify-content: flex-start;
+		margin-right: auto
+	}
+	.navbar-end {
+		justify-content: flex-end;
+		margin-left: auto
+  }
+  /* navbar css definition end */
 }

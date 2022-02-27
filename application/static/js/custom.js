@@ -1,43 +1,20 @@
 $(document).ready(function () {
 
-  // upload files
-  $('#uploadForm').on('submit', function (event) {
-    event.preventDefault();
-
-    var fd = new FormData();
-    var files = $('#sfile')[0].files;
-
-    if (files.length > 0) {
-      $('.loader').show()
-      fd.append('file', files[0])
-
-      // disable button
-      $('#closeBtn').prop('disabled', true)
-      $('#submitBtn').prop('disabled', true)
-
-      $.ajax({
-        url: $(this).attr('action'),
-        type: 'post',
-        data: fd,
-        contentType: false,
-        processData: false,
-        success: function (response) {
-          if (response != 0) {
-            $('.loader').hide()
-            $('#uploadModal').modal('hide');
-
-            // enable button
-            $('#closeBtn').prop('disabled', false)
-            $('#submitBtn').prop('disabled', false)
-          }
-        }
-      }).fail(function (response) {
-        $('.loader').hide()
-        $('#uploadModal').modal('hide');
-      });
-    } else {
-      alert("Please select a file.")
-    }
+  $('#faceFile').fileinput({
+      uploadUrl: '/uploadFace',
+      theme : 'explorer-fas',
+      uploadAsync: false,
+      showRemove :true,
+      showPreview: true,
+      showCancel:true,
+      showCaption: true,
+      maxFileCount: 2,
+      minFileCount: 1,
+      validateInitialCount: true,
+      allowedFileExtensions: ['jpg', 'png'],
+      browseClass: "btn btn-primary ",
+      dropZoneEnabled: true,
+      dropZoneTitle: 'Drag file here！',
   });
 
   $('li').click(function () {
@@ -61,7 +38,7 @@ $(document).ready(function () {
     counter();
   });
 
-  $('#filterBtn').click(() => {
+  $('#processBtn').click(() => {
     if ($('li.selected').length > 0) {
       // form selected values
       var value = []
@@ -74,7 +51,7 @@ $(document).ready(function () {
       // form a input element
       var input = document.createElement('input')
       input.type = 'hidden'
-      input.name = 'filterImages'
+      input.name = 'faceImages'
       input.value = value
       doc.appendChild(input)
 
@@ -119,12 +96,6 @@ $(document).ready(function () {
     doc.appendChild(input)
 
     doc.submit();
-});
-
-  //image popup
-  $('.pop').on('click', function () {
-    $('.imagepreview').attr('src', $(this).find('img').attr('src'));
-    $('#imagemodal').modal('show');
   });
 
 });

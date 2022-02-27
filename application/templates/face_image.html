@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% for message in get_flashed_messages() %}
+    <div class="alert alert-info">
+    {{ message }}
+    </div>
+{% endfor %}
+
+<div class="container-fluid text-center">
+    <div class="clearfix">
+        <h3>Please Upload Your Face Photos</h3>
+    </div>
+
+    <form action="/uploadFace" method="POST" enctype="multipart/form-data">
+        <div class="col-8 offset-2">
+            <div class="form-group">
+                <div class="custom-file">
+                    <input id="faceFile" name="faceFile" type="file" multiple />
+                </div>
+            </div>
+        </div>
+        <hr>
+        <div class="text-right">
+            <a href="/" class="btn btn-primary">Next</a>
+        </div>
+    </form>
+</div>
+
+
+
+
+
+{% endblock %}
