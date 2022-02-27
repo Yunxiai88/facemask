@@ -111,24 +111,6 @@ def uploadFace():
             print('file uploaded failed.')
         return jsonify({'message': "successful"})
 
-@main.route('/upload',methods = ['POST'])
-def upload():
-    if request.method == "POST":
-        isOk = True
-
-        files = request.files.getlist("files")
-        for file in files:
-            result = util.save_file(file)
-            if result == 0:
-                isOk = False
-                break
-        
-        if isOk:
-            print('file uploaded successful.')
-        else:
-            print('file uploaded failed.')
-        return jsonify({'message': "successful"})
-
 
 # execute function
 if __name__ == '__main__':

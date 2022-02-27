@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% for message in get_flashed_messages() %}
+    <div class="alert alert-info">
+    {{ message }}
+    </div>
+{% endfor %}
+
+<div class="container-fluid text-center">
+    <form id="deleteForm" action="/admin/delete" method="POST">
+        <div class="row img-grid">
+            {% for im in data %} 
+                <div class="col-sm-3 col-sm-offset-1">
+                    <li class="delete">
+                        <img name ="{{im}}" src="{{ url_for('admin.download_file', filename='')}}{{im}}" class="img-circle img-thumbnail" style="width:100%" alt="Image">
+                    </li>
+                </div>
+            {% endfor %}
+        </div>
+        <br/>
+        <div class="col-12 text-center">
+            <button id="deleteBtn" name="deleteBtn" class="btn btn-primary" >Delete</button>
+        </div>
+    </form>
+    <br>
+    <hr>
+</div>
+{% endblock %}

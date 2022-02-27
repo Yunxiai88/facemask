@@ -28,13 +28,26 @@ def get_file() :
             count += 1
     return file_list
 
+def get_upload_files() :
+    upload_path = current_app.config['UPLOAD_FOLDER']
+
+    if not os.path.exists(upload_path):
+        print("create a new folder")
+        os.makedirs(upload_path)
+    
+    file_list = []
+    
+    for file in os.listdir(upload_path):
+        file_list.append(file)
+    return file_list
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def save_file(file):
+def save_file(fpath, file):
     if allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+        file.save(os.path.join(fpath, filename))
         return 1
     return 0

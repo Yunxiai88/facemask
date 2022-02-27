@@ -35,8 +35,11 @@
                         <lable>welcome, {{current_user.name}}</lable>
                     {% endif %}
                     {% if current_user.is_authenticated and current_user.has_role("admin") %}
-                    <a href="{{ url_for('auth.admin') }}" class="navbar-item">
-                        Home
+                    <a href="{{ url_for('admin.upload') }}" class="navbar-item">
+                        Upload
+                    </a>
+                    <a href="{{ url_for('admin.view') }}" class="navbar-item">
+                        View
                     </a>
                     {% endif %}
                     {% if current_user.is_authenticated and not current_user.has_role("admin") %}

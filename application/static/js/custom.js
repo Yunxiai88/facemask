@@ -1,7 +1,7 @@
 $(document).ready(function () {
 
   $('#files').fileinput({
-    uploadUrl: '/upload',
+    uploadUrl: '/admin/upload',
     theme : 'explorer-fas',
     uploadAsync: false,
     showRemove :true,
@@ -78,22 +78,27 @@ $(document).ready(function () {
     }
   });
 
-  $('#maskBtn').click(() => {
+  $('#deleteBtn').click(() => {
+    if ($('li.selected').length > 0) {
       var value = []
-      $('li.mask').each(function() {
+      $('li.selected').each(function() {
         var imname = $(this).find('img').attr("name");
         value.push(imname)
       });
 
-      var doc = document.getElementById("maskForm");
+      var doc = document.getElementById("deleteForm");
       // form a input element
       var input = document.createElement('input')
       input.type = 'hidden'
-      input.name = 'processedImages'
+      input.name = 'deleteImages'
       input.value = value
       doc.appendChild(input)
 
       doc.submit();
+    } else {
+      alert("Please select at least one image to process.");
+      return false
+    }
   });
 
   $('#downloadBtn').click(() => {

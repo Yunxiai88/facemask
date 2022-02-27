@@ -25,6 +25,9 @@ def create_app():
     app.register_blueprint(auth_blueprint)
 
     # blueprint for non-auth parts of app
+    from .admin import admin as admin_blueprint
+    app.register_blueprint(admin_blueprint)
+
     from main import main as main_blueprint
     app.register_blueprint(main_blueprint)
 
