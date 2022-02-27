@@ -2,6 +2,7 @@ from . import db
 from . import login_manager
 from .models import User, Role
 from datetime import datetime
+from application import util
 
 from flask import Blueprint, redirect, render_template, url_for, flash, request
 from flask_login import login_user, login_required, logout_user, current_user
@@ -69,6 +70,9 @@ def signup_post():
     # add the new user to the database
     db.session.add(new_user)
     db.session.commit()
+
+    # create folder
+    util.create_folder(new_user.email)
 
     return redirect(url_for('auth.login'))
 

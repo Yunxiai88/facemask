@@ -20,18 +20,24 @@
             {% for im in data %} 
                 <div class="col-sm-3 col-sm-offset-1">
                     <li class="download">
-                        <img name ="{{im}}" src="{{ url_for('static', filename='processed/')}}{{im}}" class="img-circle img-thumbnail" style="width:100%" alt="Image">
+                        <img name ="{{im}}" src="{{ url_for('admin.process_file', filename='')}}{{im}}" class="img-circle img-thumbnail" style="width:100%" alt="Image">
                     </li>
                 </div>
             {% endfor %}
         </div>
         
         <br/>
-        <div class="col-12 text-center">
-            <button id="downloadBtn" name="downloadBtn" class="btn btn-primary" >Download</button>
-        </div>
-        <br>
         <hr>
+
+        <div class="row">
+            <div class="col-1">
+                <a type="button" onclick="history.back()" class="btn btn-primary">Previous</a>
+            </div>
+            <div class="col-1 offset-5">
+                <button id="downloadBtn" name="downloadBtn" class="btn btn-primary" >Download</button>
+            </div>
+        </div>
+        <br/>
     </form>
 </div>
 {% endblock %}

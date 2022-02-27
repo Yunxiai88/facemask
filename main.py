@@ -9,8 +9,8 @@ from glob import glob
 from io import BytesIO
 from zipfile import ZipFile
 
-from flask import Blueprint, Flask, jsonify, flash
-from flask import render_template, request, redirect, send_file, url_for
+from flask import Blueprint, Flask, jsonify, flash, current_app
+from flask import render_template, request, redirect, send_file, url_for, send_from_directory
 from flask_login import login_required, current_user
 
 from application import db, create_app, util, users
@@ -29,16 +29,17 @@ def face_image():
     return render_template('face_image.html')
 
 @main.route("/")
+@login_required
 def index():
-
-    # check face image existing or not
+    # check whether face embedding existing in db
     if current_user.faceEmbedding:
-        images = util.get_file()
+        images = util.get_file(current_user.email)
         print(images)
 
-        # return the rendered template
+        # return to index template
         return render_template("index.html", data=images)
     else:
+        # return to face image template
         return render_template("face_image.html")
 
 @main.route("/process", methods=['POST'])
@@ -96,8 +97,10 @@ def uploadFace():
         isOk = True
         files = request.files.getlist("faceFile")
 
+        processed_path = os.path.join(current_app.config['PROCESSED_FOLDER'], current_user.email)
+
         for file in files:
-            result = util.save_file(file)
+            result = util.save_file(processed_path, file)
             if result == 1:
                 #TODO -- get face embending, then update to current user
                 users.save_faceEmbedding("11111111", current_user.id)

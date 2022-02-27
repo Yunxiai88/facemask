@@ -1,25 +1,21 @@
 import os
 import csv
 import json
-import pathlib
 from flask import current_app
 from application import db, create_app, util
 from werkzeug.utils import secure_filename
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
-path = pathlib.Path(__file__)
-
-def get_file() :
-    file_path = "./application/static/processed"
-
+def get_file(email) :
     file_list = []
+    processed_path = os.path.join(current_app.config['PROCESSED_FOLDER'], email)
 
-    if not os.path.exists(file_path):
+    if not os.path.exists(processed_path):
         print("folder for this user not exists")
     else:
         count = 0
-        for file in os.listdir(file_path):
+        for file in os.listdir(processed_path):
             # fetch max two images
             if count >= 2:
                 break
@@ -27,6 +23,11 @@ def get_file() :
             file_list.append(file)
             count += 1
     return file_list
+
+def create_folder(email):
+    processed_path = os.path.join(current_app.config['PROCESSED_FOLDER'], email)
+    if not os.path.exists(processed_path):
+        os.makedirs(processed_path)
 
 def get_upload_files() :
     upload_path = current_app.config['UPLOAD_FOLDER']

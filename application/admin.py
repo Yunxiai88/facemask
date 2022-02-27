@@ -37,12 +37,12 @@ def upload_post():
 @admin.route("/delete", methods=['POST'])
 def process():
     images = []
+    save_path = current_app.config['UPLOAD_FOLDER']
 
     deleteImages = request.form.get('deleteImages')
     if deleteImages and len(deleteImages) > 0:
         images = deleteImages.split(',')
 
-    save_path = current_app.config['UPLOAD_FOLDER']
     for image in images:
         print("delete image --> ", image)
         os.remove(os.path.join(save_path, image))
@@ -59,6 +59,14 @@ def view():
 
 @admin.route('/uploads/<path:filename>')
 def download_file(filename):
-    upload_path = os.path.join(path.parent.parent, current_app.config['UPLOAD_FOLDER'])
+    config_path = current_app.config['UPLOAD_FOLDER']
+    upload_path = os.path.join(path.parent.parent, config_path)
 
     return send_from_directory(upload_path, filename)
+
+@admin.route('/process/<path:filename>')
+def process_file(filename):
+    config_path = current_app.config['PROCESSED_FOLDER']
+    process_path = os.path.join(path.parent.parent, config_path, current_user.email)
+
+    return send_from_directory(process_path, filename)
