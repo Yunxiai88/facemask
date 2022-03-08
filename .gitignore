@@ -67,3 +67,9 @@ output/*/*.jpg
 
 application/data/*
 logs/*
+
+input/group/*
+input/individual/*
+
+!input/group/.gitkeep 
+!input/individual/.gitkeep 

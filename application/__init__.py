@@ -11,7 +11,8 @@ def create_app():
     # initialize a flask object
     app = Flask(__name__)
     app.config['SECRET_KEY'] = "facemasksystemkey"
-    app.config['UPLOAD_FOLDER'] = 'input'
+    app.config['UPLOAD_FOLDER_GRP'] = 'input/group'
+    app.config['UPLOAD_FOLDER_INDV'] = 'input/individual'
     app.config['PROCESSED_FOLDER'] = 'application/processed'
     app.config['SESSION_TYPE'] = 'filesystem'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'

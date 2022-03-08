@@ -18,7 +18,7 @@ def upload():
 def upload_post():
     if request.method == "POST":
         isOk = True
-        save_path = current_app.config['UPLOAD_FOLDER']
+        save_path = current_app.config['UPLOAD_FOLDER_GRP']
 
         files = request.files.getlist("files")
         for file in files:
@@ -37,7 +37,7 @@ def upload_post():
 @admin.route("/delete", methods=['POST'])
 def process():
     images = []
-    save_path = current_app.config['UPLOAD_FOLDER']
+    save_path = current_app.config['UPLOAD_FOLDER_GRP']
 
     deleteImages = request.form.get('deleteImages')
     if deleteImages and len(deleteImages) > 0:
