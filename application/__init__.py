@@ -15,7 +15,7 @@ def create_app():
     app.config['UPLOAD_FOLDER_INDV'] = 'input/individual'
     app.config['PROCESSED_FOLDER'] = 'application/processed'
     app.config['SESSION_TYPE'] = 'filesystem'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db2.sqlite'
 
     db.init_app(app)
     
