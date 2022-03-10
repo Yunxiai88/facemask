@@ -3,6 +3,7 @@ import pathlib
 from flask import Flask
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
+import os
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -11,11 +12,12 @@ def create_app():
     # initialize a flask object
     app = Flask(__name__)
     app.config['SECRET_KEY'] = "facemasksystemkey"
-    app.config['UPLOAD_FOLDER_GRP'] = 'input/group'
-    app.config['UPLOAD_FOLDER_INDV'] = 'input/individual'
+    app.config['UPLOAD_FOLDER_GRP'] = os.path.join('input', 'group')
+    app.config['UPLOAD_FOLDER_INDV'] = os.path.join('input', 'individual')
     app.config['PROCESSED_FOLDER'] = 'application/processed'
     app.config['SESSION_TYPE'] = 'filesystem'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db2.sqlite'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     db.init_app(app)
     

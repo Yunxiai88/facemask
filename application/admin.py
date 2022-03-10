@@ -1,9 +1,13 @@
+from asyncio.windows_events import NULL
 import os
 import pathlib
 from application import util
+from .models import GroupPhoto
+from . import db
 from flask import Blueprint, jsonify, request
 from flask import render_template, current_app, send_from_directory, url_for, redirect
 from flask_login import login_required, current_user
+from datetime import datetime
 
 admin = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -21,13 +25,19 @@ def upload_post():
         save_path = current_app.config['UPLOAD_FOLDER_GRP']
 
         files = request.files.getlist("files")
+        filepaths = []
         for file in files:
             result = util.save_file(save_path, file)
             if result == 0:
                 isOk = False
                 break
+            filepaths.append(result)
+        # print(current_user.id)
         
         if isOk:
+            for f in filepaths:
+                db.session.add(GroupPhoto(f,current_user.id, None, datetime.now(), datetime.now(), None))
+            db.session.commit()
             print('file uploaded successful.')
         else:
             print('file uploaded failed.')

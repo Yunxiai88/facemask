@@ -50,5 +50,5 @@ def save_file(fpath, file):
     if allowed_file(file.filename):
         filename = secure_filename(file.filename)
         file.save(os.path.join(fpath, filename))
-        return 1
+        return os.path.join(fpath, filename)
     return 0

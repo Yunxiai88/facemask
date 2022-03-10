@@ -1,6 +1,7 @@
 from . import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -54,8 +55,8 @@ class IndividualPhoto(db.Model):
     embedding = db.Column(db.String(2000), nullable=True)
     face_bbox = db.Column(db.String, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    created_at = db.Column(db.DateTime(), nullable=False)
-    updated_at = db.Column(db.DateTime(), nullable=False)
+    created_at = db.Column(db.DateTime(), nullable=False, default=datetime.now)
+    updated_at = db.Column(db.DateTime(), nullable=False, default=datetime.now, onupdate=datetime.now)
     deleted_at = db.Column(db.DateTime(), nullable=True)
 
     # one-to-many
@@ -78,20 +79,18 @@ class GroupPhoto(db.Model):
     filepath = db.Column(db.String(100), unique=False, nullable=False)
     admin_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     no_of_faces = db.Column(db.Integer, nullable=True)
-    created_at = db.Column(db.DateTime(), nullable=False)
-    updated_at = db.Column(db.DateTime(), nullable=False)
+    created_at = db.Column(db.DateTime(), nullable=False, default=datetime.now)
+    updated_at = db.Column(db.DateTime(), nullable=False, default=datetime.now, onupdate=datetime.now)
     deleted_at = db.Column(db.DateTime(), nullable=True)
 
     # one-to-many
     face_embedding = db.relationship('FaceEmbedding', backref='grp_photo', lazy=True)
     clustering_log = db.relationship('ClusteringLog', backref='grp_photo', lazy=True)
 
-    def __init__(self, name, filepath, embedding, face_bbox, user_id, created_at, updated_at, deleted_at):
-        self.name = name
+    def __init__(self, filepath, admin_id, no_of_faces, created_at, updated_at, deleted_at):
         self.filepath = filepath
-        self.embedding = embedding
-        self.face_bbox = face_bbox
-        self.user_id = user_id
+        self.admin_id = admin_id
+        self.no_of_faces = no_of_faces
         self.created_at = created_at
         self.updated_at = updated_at
         self.deleted_at = deleted_at
@@ -117,7 +116,7 @@ class ClusteringLog(db.Model):
     grp_photo_ids = db.Column(db.String, db.ForeignKey('group_photo.id'), nullable=False)
     no_of_clusters = db.Column(db.Integer, nullable=True)
     clustered_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    clustered_at = db.Column(db.DateTime(), nullable=False)
+    clustered_at = db.Column(db.DateTime(), nullable=False, default=datetime.now)
 
     # one-to-many
     cluster = db.relationship('Cluster', backref='clustering_log', lazy=True)
@@ -127,5 +126,5 @@ class Cluster(db.Model):
     face_embedding_id = db.Column(db.Integer, db.ForeignKey('face_embedding.id'), nullable=False)
     cluster_no = db.Column(db.Integer, nullable=False)
     clustering_log_id = db.Column(db.Integer, db.ForeignKey('clustering_log.id'), nullable=False)
-    pred_indv_id = db.Column(db.Integer, db.ForeignKey('indvidual_photo.id'), nullable=False)
+    pred_indv_id = db.Column(db.Integer, db.ForeignKey('individual_photo.id'), nullable=False)
 

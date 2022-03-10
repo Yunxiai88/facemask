@@ -32,7 +32,7 @@ def face_image():
 @login_required
 def index():
     # check whether face embedding existing in db
-    if current_user.faceEmbedding:
+    if current_user.uploaded_indv_photos:
         images = util.get_file(current_user.email)
         print(images)
 
@@ -102,8 +102,9 @@ def uploadFace():
         for file in files:
             result = util.save_file(processed_path, file)
             if result == 1:
+                isOk = True
                 #TODO -- get face embending, then update to current user
-                users.save_faceEmbedding("11111111", current_user.id)
+                # users.save_faceEmbedding("11111111", current_user.id)
             else:
                 isOk = False
                 break
