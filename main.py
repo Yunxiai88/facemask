@@ -9,11 +9,11 @@ from glob import glob
 from io import BytesIO
 from zipfile import ZipFile
 
-from flask import Blueprint, Flask, jsonify, flash, current_app
+from flask import Blueprint, Flask, jsonify, flash, current_app, session
 from flask import render_template, request, redirect, send_file, url_for, send_from_directory
 from flask_login import login_required, current_user
 
-from application import db, create_app, util, users
+from application import db, create_app, util, users, face_model
 
 images = []
 database = []
@@ -32,7 +32,7 @@ def face_image():
 @login_required
 def index():
     # check whether face embedding existing in db
-    if current_user.faceEmbedding:
+    if current_user.indvPhotos:
         images = util.get_file(current_user.email)
         print(images)
 
@@ -95,25 +95,42 @@ def download():
 def uploadFace():
     if request.method == "POST":
         isOk = True
-        files = request.files.getlist("faceFile")
+        face_list = []
 
+        files = request.files.getlist("faceFile")
         processed_path = os.path.join(current_app.config['PROCESSED_FOLDER'], current_user.email)
 
         for file in files:
+            # get face embending
+            result = face_model.get_embedding(file)
+            print("embedding info: " + str(result))
+
+            if result["code"] != "0":
+                return jsonify({"error": result["message"]})
+            
+            # append to list
+            face_list.append(result)
+
+        # save file to disk
+        for file in files:
             result = util.save_file(processed_path, file)
-            if result == 1:
-                #TODO -- get face embending, then update to current user
-                users.save_faceEmbedding("11111111", current_user.id)
-            else:
+            if result == 0:
                 isOk = False
                 break
         
         if isOk:
             print('file uploaded successful.')
+
+            # save to db
+            for face in face_list:
+                users.save_IndividualPhoto(name = "name", 
+                                        file_path = os.path.join(processed_path, file.filename), 
+                                        uploaded_by = current_user.id,
+                                        embedding = face["embedding"],
+                                        bbox = face["bbox"])
         else:
             print('file uploaded failed.')
         return jsonify({'message': "successful"})
-
 
 # execute function
 if __name__ == '__main__':
