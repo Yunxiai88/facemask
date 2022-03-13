@@ -25,8 +25,24 @@ def error():
     return render_template("error.html")
 
 @main.route('/faceimage')
-def face_image():
+def upload_face():
     return render_template('face_image.html')
+
+@main.route('/profile')
+def profile():
+
+    images = []
+    if current_user.indvPhotos:
+        images = util.get_file(current_user.email)
+
+    return render_template('profile.html', data=images, appends=2-len(images))
+
+@main.route('/delete/<int:face_id>')
+def delete_face(face_id):
+
+    print(face_id)
+    
+    return redirect(url_for("main.profile"))
 
 @main.route("/")
 @login_required
@@ -94,43 +110,41 @@ def download():
 @main.route('/uploadFace',methods = ['POST'])
 def uploadFace():
     if request.method == "POST":
-        isOk = True
-        face_list = []
+        try:
+            username = request.form['username']
+            file = request.files['faceFile']
 
-        files = request.files.getlist("faceFile")
-        processed_path = os.path.join(current_app.config['PROCESSED_FOLDER'], current_user.email)
+            #file.save(os.path.join(processed_path, file.filename))
 
-        for file in files:
-            # get face embending
-            result = face_model.get_embedding(file)
-            print("embedding info: " + str(result))
+            #step1: get face embending
+            data = face_model.get_embedding(file)
+            print("embedding info: " + str(data))
 
-            if result["code"] != "0":
-                return jsonify({"error": result["message"]})
+            if data["code"] != "0":
+                return jsonify({"error": data["message"]})
+
+            #step2: save file to disk
+            result = util.save_processed_file(file)
+            if result == 1:
+                print("file saved failed.")
+                return jsonify({"error": "file uploaded failed."})
             
-            # append to list
-            face_list.append(result)
-
-        # save file to disk
-        for file in files:
-            result = util.save_file(processed_path, file)
-            if result == 0:
-                isOk = False
-                break
-        
-        if isOk:
+            #step3: save to db
+            processed_path = os.path.join(current_app.config['PROCESSED_FOLDER'], current_user.email)
+            result = users.save_IndividualPhoto(name = username, 
+                                    file_path = os.path.join(processed_path, file.filename), 
+                                    uploaded_by = current_user.id,
+                                    embedding = data["embedding"],
+                                    bbox = data["bbox"])
+            if result == 1:
+                print("save info to database failed.")
+                return jsonify({"error": "file uploaded failed."})
+            
             print('file uploaded successful.')
-
-            # save to db
-            for face in face_list:
-                users.save_IndividualPhoto(name = "name", 
-                                        file_path = os.path.join(processed_path, file.filename), 
-                                        uploaded_by = current_user.id,
-                                        embedding = face["embedding"],
-                                        bbox = face["bbox"])
-        else:
-            print('file uploaded failed.')
-        return jsonify({'message': "successful"})
+            return jsonify({'message': "successful"})
+        except Exception as e:
+            print(e)
+            return jsonify({"error": "System Error. Please contact administrator."})
 
 # execute function
 if __name__ == '__main__':

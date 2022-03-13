@@ -2,6 +2,7 @@ import os
 import csv
 import json
 from flask import current_app
+from flask_login import current_user
 from application import db, create_app, util
 from werkzeug.utils import secure_filename
 
@@ -50,5 +51,16 @@ def save_file(fpath, file):
     if allowed_file(file.filename):
         filename = secure_filename(file.filename)
         file.save(os.path.join(fpath, filename))
-        return 1
-    return 0
+        return 0
+    return 1
+
+def save_processed_file(file):
+    processed_path = os.path.join(current_app.config['PROCESSED_FOLDER'], current_user.email)
+
+    file.stream.seek(0)
+
+    if allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(processed_path, filename))
+        return 0
+    return 1

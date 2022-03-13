@@ -35,7 +35,7 @@ def upload_post():
         return jsonify({'message': "successful"})
 
 @admin.route("/delete", methods=['POST'])
-def process():
+def delete():
     images = []
     save_path = current_app.config['UPLOAD_FOLDER']
 

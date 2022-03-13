@@ -53,17 +53,17 @@ class IndvPhoto(db.Model):
     __tablename__ = "indv_photo"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), unique=True)
+    name = db.Column(db.String(50), unique=False)
     file_path = db.Column(db.String(100), unique=False, nullable=False)
-    uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     # one-to-many
     embeddings = db.relationship('FaceEmbedding', backref='indv_photo', lazy=True)
 
-    def __init__(self, name, file_path, uploaded_by):
+    def __init__(self, name, file_path, user_id):
         self.name = name
         self.file_path = file_path
-        self.uploaded_by = uploaded_by
+        self.user_id = user_id
 
 class GroupPhoto(db.Model):
     __tablename__ = "group_photo"
@@ -71,22 +71,22 @@ class GroupPhoto(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     file_path = db.Column(db.String(100), unique=False, nullable=False)
     face_no = db.Column(db.Integer, unique=False, nullable=True)
-    uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     # one-to-many
     embeddings = db.relationship('FaceEmbedding', backref='group_photo', lazy=True)
 
-    def __init__(self, file_path, face_no, uploaded_by):
+    def __init__(self, file_path, face_no, user_id):
         self.file_path = file_path
         self.face_no = face_no
-        self.uploaded_by = uploaded_by
+        self.user_id = user_id
 
 class FaceEmbedding(db.Model):
     __tablename__ = "face_embedding"
 
     id = db.Column(db.Integer, primary_key=True)
-    embedding = db.Column(db.String(2000), primary_key=False)
-    bbox = db.Column(db.String(500), unique=False, nullable=False)
+    embedding = db.Column(db.TEXT, primary_key=False)
+    bbox = db.Column(db.TEXT, unique=False, nullable=False)
 
     # foreign keys
     group_photo_id = db.Column(db.Integer, db.ForeignKey('group_photo.id'), nullable=True)

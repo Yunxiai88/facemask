@@ -8,7 +8,7 @@ def get_embedding(file_stream):
     filename = file_stream.filename
 
     # Find all the faces in the image
-    face_locations = face_recognition.face_locations(image)
+    face_locations = face_recognition.face_locations(image, model="hog")
     print("I found {0} face(s) in photo {1}.".format(len(face_locations), filename))
 
     face_encoding = ""
@@ -18,14 +18,17 @@ def get_embedding(file_stream):
             "message" : "No face found in this photo, Pls try another one."
         }
     elif len(face_locations) == 1:
-        for face_location in face_locations:
-            face_encoding = face_recognition.face_encodings(image, face_location)
-            return {
-                "code" : "0", 
-                "message" : "face found.",
-                "embedding" : face_encoding,
-                "bbox" : face_location
-            }
+        face_encodings = face_recognition.face_encodings(image, face_locations)
+
+        print("face location = ", face_locations[0])
+        print("face encoding = ", face_encodings[0])
+
+        return {
+            "code" : "0", 
+            "message" : "face found.",
+            "embedding" : str(face_encodings[0]),
+            "bbox" : str(face_locations[0])
+        }
     else:
         return {
             "code: 2", 

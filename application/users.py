@@ -21,12 +21,20 @@ def save_faceEmbedding(embedding, bbox, group_photo_id=None, indv_photo_id=None)
     db.session.commit()
 
 def save_IndividualPhoto(name, file_path, uploaded_by, embedding, bbox, group_photo_id=None):
-    individualPhoto = IndvPhoto(name, file_path, uploaded_by)
-    db.session.add(individualPhoto)
-    db.session.flush()
+    try:
+        individualPhoto = IndvPhoto(name, file_path, uploaded_by)
+        db.session.add(individualPhoto)
+        db.session.flush()
 
-    faceEmbedding = FaceEmbedding(embedding, bbox, group_photo_id, individualPhoto.id)
-    db.session.add(faceEmbedding)
-    db.session.flush()
+        print("Temp Individual ID = ", individualPhoto.id)
 
-    db.session.commit()
+        faceEmbedding = FaceEmbedding(embedding, bbox, group_photo_id, individualPhoto.id)
+        db.session.add(faceEmbedding)
+        db.session.flush()
+
+        db.session.commit()
+        return 0
+    except Exception as e:
+        print(e)
+        return 1
+    
