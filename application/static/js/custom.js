@@ -17,7 +17,7 @@ $(document).ready(function () {
   });
 
   $('#faceFile').fileinput({
-      uploadUrl: '/profile/faces/upload',
+      uploadUrl: '/profile/upload',
       theme : 'explorer-fas',
       uploadAsync: false,
       maxFileCount: 1,

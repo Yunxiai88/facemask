@@ -83,10 +83,10 @@ def delete_processed_file(filename):
             os.unlink(delete_file)
 
             # log file
-            print(delete_file + " been removed.")
+            print(filename + " been removed.")
             return 0
         else:
-            print(delete_file + " not exist.")
+            print(filename + " not exist.")
             return 1
     except Exception as e:
         print('Failed to delete %s. Reason: %s' % (delete_file, e))

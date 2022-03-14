@@ -1,14 +1,18 @@
 import os
-from .models import IndvPhoto
+import pathlib
+from . import db
+from sqlalchemy import null
 
+from .models import IndvPhoto, FaceEmbedding
 from application import util, users, photos
 
 from flask_login import current_user
-
-from flask import Blueprint, jsonify, current_app, session
+from flask import Blueprint, flash, jsonify, current_app, session
 from flask import render_template, request, redirect, url_for, send_from_directory
 
 profile = Blueprint('profile', __name__, url_prefix='/profile')
+
+path = pathlib.Path(__file__)
 
 @profile.route('/')
 def walk_face():
@@ -23,29 +27,76 @@ def walk_face():
     return render_template('profile.html', data=face_list, appends=2-len(face_list))
 
 @profile.route('/upload')
-def upload_page():
+def profile_page():
     return render_template('face_image.html')
 
-@profile.route('/faces/<path:indvId>')
+@profile.route('/query/<path:indvId>')
 def query_face(indvId):
     indvPhoto = IndvPhoto.query.get(indvId)
 
-    file_path = indvPhoto.file_path
     file_name = indvPhoto.file_name
-    print("file path: " + file_path, " file name: " + file_name)
+    file_path = os.path.join(path.parent.parent, indvPhoto.file_path)
 
     return send_from_directory(file_path, file_name)
 
-@profile.route('/faces/<path:indvId>')
+@profile.route('/delete/<path:indvId>')
 def delete_face(indvId):
-    indvPhoto = IndvPhoto.query.get(indvId)
 
-    db.session.delete(indvPhoto)
-    db.session.commit()
+    result_code = 1
+    result_message = ""
 
-    return redirect(url_for("admin.view"))
+    try:
+        #step1: delete from db
+        indvPhoto = IndvPhoto.query.get(indvId)
+        db.session.delete(indvPhoto)
+        db.session.flush()
+        print("1 --> delete individual photo [{}] from db.".format(indvId))
 
-@profile.route('/faces/upload',methods = ['POST'])
+        #step2: delete individual face embedding
+        for aa in db.session.query(FaceEmbedding).\
+                            filter(FaceEmbedding.indv_photo_id == indvId).\
+                            filter(FaceEmbedding.group_photo_id == None):
+            print("-------", str(aa.embedding))
+
+            db.session.delete(aa)
+            db.session.flush()
+        print("2 --> delete individual face embedding from db.")
+
+        #step3: update individual id for group photos
+        embeddings = FaceEmbedding.query.filter(
+                    FaceEmbedding.group_photo_id != None
+                ).filter(
+                    FaceEmbedding.indv_photo_id == indvId
+                ).all()
+
+        if embeddings:
+            print("Having group embeddings to update.")
+            for bb in embeddings:
+                bb.indv_photo_id = None
+            db.session.flush()
+            print("3 --> update individual related group embedding in db.")
+
+        #step4: remove file from disk
+        result_code = util.delete_processed_file(indvPhoto.file_name)
+        if result_code == 1:
+            print("delete file failed.")
+        else:
+            print("4 --> remove individual photo from disk.")
+
+            #step5: final delete record from db
+            db.session.commit()
+            print("5 --> final delete individual info.")
+
+            result_message = "Delete individual photo successful."
+    except Exception as e:
+        print("System Error: [{}] -- {}".format(delete_face, e))
+        result_message = "delete individual photo failed."
+
+    flash(result_message)
+
+    return redirect(url_for("profile.walk_face"))
+
+@profile.route('/upload', methods = ['POST'])
 def upload_face():
     if request.method == "POST":
         try:
@@ -86,6 +137,6 @@ def upload_face():
             print('file uploaded successful.')
             return jsonify({'message': "successful"})
         except Exception as e:
-            print(e)
+            print("System Error: ", e)
             return jsonify({"error": "System Error. Please contact administrator."})
 
