@@ -14,14 +14,14 @@
             {% for im in data %} 
             <tr>
                 <td style="width:200px; height:200px;">
-                    <img name="{{im}}" src="{{url_for('admin.process_file', filename='')}}{{im}}" 
+                    <img name="{{im}}" src="{{url_for('profile.query_face', indvId='')}}{{im}}" 
                                     class="img-circle img-thumbnail" style="width:100%" alt="Image">
                 </td>
                 <td style="vertical-align: middle;">
-                    <a href="{{ url_for('main.upload_face') }}" class="btn btn-primary">
+                    <a href="{{ url_for('profile.upload_page') }}" class="btn btn-primary">
                         Update
                     </a>
-                    <a href="{{ url_for('main.delete_face', face_id='1') }}" class="btn btn-primary">
+                    <a href="{{ url_for('profile.delete_face', indvId='') }}{{im}}" class="btn btn-primary">
                         Delete
                     </a>
                 </td>
@@ -34,7 +34,7 @@
                     &nbsp;
                 </td>
                 <td style="vertical-align: middle;">
-                    <a href="{{ url_for('main.upload_face') }}" class="btn btn-primary">
+                    <a href="{{ url_for('profile.upload_page') }}" class="btn btn-primary">
                         Add
                     </a>
                 </td>

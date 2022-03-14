@@ -55,31 +55,35 @@ class IndvPhoto(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=False)
     file_path = db.Column(db.String(100), unique=False, nullable=False)
+    file_name = db.Column(db.String(100), unique=False, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     # one-to-many
     embeddings = db.relationship('FaceEmbedding', backref='indv_photo', lazy=True)
 
-    def __init__(self, name, file_path, user_id):
+    def __init__(self, name, file_path, file_name, user_id):
         self.name = name
-        self.file_path = file_path
         self.user_id = user_id
+        self.file_path = file_path
+        self.file_name = file_name
 
 class GroupPhoto(db.Model):
     __tablename__ = "group_photo"
 
     id = db.Column(db.Integer, primary_key=True)
     file_path = db.Column(db.String(100), unique=False, nullable=False)
+    file_name = db.Column(db.String(100), unique=False, nullable=False)
     face_no = db.Column(db.Integer, unique=False, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     # one-to-many
     embeddings = db.relationship('FaceEmbedding', backref='group_photo', lazy=True)
 
-    def __init__(self, file_path, face_no, user_id):
-        self.file_path = file_path
+    def __init__(self, file_path, file_name, face_no, user_id):
         self.face_no = face_no
         self.user_id = user_id
+        self.file_path = file_path
+        self.file_name = file_name
 
 class FaceEmbedding(db.Model):
     __tablename__ = "face_embedding"

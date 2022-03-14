@@ -9,40 +9,22 @@ from glob import glob
 from io import BytesIO
 from zipfile import ZipFile
 
-from flask import Blueprint, Flask, jsonify, flash, current_app, session
-from flask import render_template, request, redirect, send_file, url_for, send_from_directory
+from flask import Blueprint, Flask, render_template, request, send_file
 from flask_login import login_required, current_user
 
-from application import db, create_app, util, users, face_model
+from application import db, create_app, util
 
 images = []
-database = []
 
 main = Blueprint('main', __name__)
+
+#---------------------------------------------------------------------
+#----------------------------Functions--------------------------------
+#---------------------------------------------------------------------
 
 @main.route("/error")
 def error():
     return render_template("error.html")
-
-@main.route('/faceimage')
-def upload_face():
-    return render_template('face_image.html')
-
-@main.route('/profile')
-def profile():
-
-    images = []
-    if current_user.indvPhotos:
-        images = util.get_file(current_user.email)
-
-    return render_template('profile.html', data=images, appends=2-len(images))
-
-@main.route('/delete/<int:face_id>')
-def delete_face(face_id):
-
-    print(face_id)
-    
-    return redirect(url_for("main.profile"))
 
 @main.route("/")
 @login_required
@@ -105,48 +87,9 @@ def download():
     return send_file(stream, as_attachment=True, attachment_filename='archive.zip')
 
 #---------------------------------------------------------------------
-#----------------------------Functions--------------------------------
+#-------------------------Execute Function----------------------------
 #---------------------------------------------------------------------
-@main.route('/uploadFace',methods = ['POST'])
-def uploadFace():
-    if request.method == "POST":
-        try:
-            username = request.form['username']
-            file = request.files['faceFile']
-
-            #file.save(os.path.join(processed_path, file.filename))
-
-            #step1: get face embending
-            data = face_model.get_embedding(file)
-            print("embedding info: " + str(data))
-
-            if data["code"] != "0":
-                return jsonify({"error": data["message"]})
-
-            #step2: save file to disk
-            result = util.save_processed_file(file)
-            if result == 1:
-                print("file saved failed.")
-                return jsonify({"error": "file uploaded failed."})
-            
-            #step3: save to db
-            processed_path = os.path.join(current_app.config['PROCESSED_FOLDER'], current_user.email)
-            result = users.save_IndividualPhoto(name = username, 
-                                    file_path = os.path.join(processed_path, file.filename), 
-                                    uploaded_by = current_user.id,
-                                    embedding = data["embedding"],
-                                    bbox = data["bbox"])
-            if result == 1:
-                print("save info to database failed.")
-                return jsonify({"error": "file uploaded failed."})
-            
-            print('file uploaded successful.')
-            return jsonify({'message': "successful"})
-        except Exception as e:
-            print(e)
-            return jsonify({"error": "System Error. Please contact administrator."})
-
-# execute function
+#
 if __name__ == '__main__':
     # construct the argument parser and parse command line arguments
     ap = argparse.ArgumentParser()
