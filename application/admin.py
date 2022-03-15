@@ -45,7 +45,7 @@ def upload_post():
         return jsonify({'message': "successful"})
 
 @admin.route("/delete", methods=['POST'])
-def process():
+def delete():
     images = []
     save_path = current_app.config['UPLOAD_FOLDER_GRP']
 
@@ -73,10 +73,3 @@ def download_file(filename):
     upload_path = os.path.join(path.parent.parent, config_path)
 
     return send_from_directory(upload_path, filename)
-
-@admin.route('/process/<path:filename>')
-def process_file(filename):
-    config_path = current_app.config['PROCESSED_FOLDER']
-    process_path = os.path.join(path.parent.parent, config_path, current_user.email)
-
-    return send_from_directory(process_path, filename)

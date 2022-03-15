@@ -4,3 +4,5 @@ matplotlib
 flask
 flask-login
 flask-sqlalchemy
+cmake
+face_recognition

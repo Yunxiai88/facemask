@@ -20,7 +20,7 @@
             {% for im in data %} 
                 <div class="col-sm-3 col-sm-offset-1">
                     <li class="download">
-                        <img name ="{{im}}" src="{{ url_for('admin.process_file', filename='')}}{{im}}" class="img-circle img-thumbnail" style="width:100%" alt="Image">
+                        <img name ="{{im}}" src="{{ url_for('profile.query_face', indvId='')}}{{im}}" class="img-circle img-thumbnail" style="width:100%" alt="Image">
                     </li>
                 </div>
             {% endfor %}

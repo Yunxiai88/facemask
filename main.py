@@ -9,24 +9,22 @@ from glob import glob
 from io import BytesIO
 from zipfile import ZipFile
 
-from flask import Blueprint, Flask, jsonify, flash, current_app
-from flask import render_template, request, redirect, send_file, url_for, send_from_directory
+from flask import Blueprint, Flask, render_template, request, send_file
 from flask_login import login_required, current_user
 
-from application import db, create_app, util, users
+from application import db, create_app, util
 
 images = []
-database = []
 
 main = Blueprint('main', __name__)
+
+#---------------------------------------------------------------------
+#----------------------------Functions--------------------------------
+#---------------------------------------------------------------------
 
 @main.route("/error")
 def error():
     return render_template("error.html")
-
-@main.route('/faceimage')
-def face_image():
-    return render_template('face_image.html')
 
 @main.route("/")
 @login_required
@@ -89,34 +87,8 @@ def download():
     return send_file(stream, as_attachment=True, attachment_filename='archive.zip')
 
 #---------------------------------------------------------------------
-#----------------------------Functions--------------------------------
+#-------------------------Execute Function----------------------------
 #---------------------------------------------------------------------
-@main.route('/uploadFace',methods = ['POST'])
-def uploadFace():
-    if request.method == "POST":
-        isOk = True
-        files = request.files.getlist("faceFile")
-
-        processed_path = os.path.join(current_app.config['PROCESSED_FOLDER'], current_user.email)
-
-        for file in files:
-            result = util.save_file(processed_path, file)
-            if result == 1:
-                isOk = True
-                #TODO -- get face embending, then update to current user
-                # users.save_faceEmbedding("11111111", current_user.id)
-            else:
-                isOk = False
-                break
-        
-        if isOk:
-            print('file uploaded successful.')
-        else:
-            print('file uploaded failed.')
-        return jsonify({'message': "successful"})
-
-
-# execute function
 if __name__ == '__main__':
     # construct the argument parser and parse command line arguments
     ap = argparse.ArgumentParser()

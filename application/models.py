@@ -4,6 +4,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
 class User(UserMixin, db.Model):
+    __tablename__ = "user"
+
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), primary_key=False, unique=False, nullable=False)
@@ -38,21 +40,25 @@ class User(UserMixin, db.Model):
         return "<User {}>".format(self.username)
 
 class Role(db.Model):
+    __tablename__ = "role"
+
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(50), unique=True)
 
 class UserRoles(db.Model):
+    __tablename__ = "user_roles"
+
     id = db.Column(db.Integer(), primary_key=True)
     user_id = db.Column(db.Integer(), db.ForeignKey('user.id', ondelete='CASCADE'))
     role_id = db.Column(db.Integer(), db.ForeignKey('role.id', ondelete='CASCADE'))
 
-
-
 class IndividualPhoto(db.Model):
+    __tablename__ = "individual_photo"
+    
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=False, nullable=False)
-    filepath = db.Column(db.String(100), unique=False, nullable=False)
-    embedding = db.Column(db.String(2000), nullable=True)
+    file_path = db.Column(db.String(100), unique=False, nullable=False)
+    file_name = db.Column(db.String(100), unique=False, nullable=False)
     face_bbox = db.Column(db.String, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime(), nullable=False, default=datetime.now)
@@ -60,23 +66,26 @@ class IndividualPhoto(db.Model):
     deleted_at = db.Column(db.DateTime(), nullable=True)
 
     # one-to-many
-    face_embedding = db.relationship('FaceEmbedding', backref='indv_photo', lazy=True)
-    cluster = db.relationship('Cluster', backref='indv_photo', lazy=True)
+    face_embedding = db.relationship('FaceEmbedding', backref='individual_photo', lazy=True)
+    cluster = db.relationship('Cluster', backref='individual_photo', lazy=True)
 
-    def __init__(self, name, filepath, embedding, face_bbox, user_id, created_at, updated_at, deleted_at):
+    def __init__(self, name, file_path, file_name, face_bbox, user_id, created_at, updated_at, deleted_at):
         self.name = name
-        self.filepath = filepath
-        self.embedding = embedding
+        self.file_path = file_path
+        self.file_name = file_name
         self.face_bbox = face_bbox
-        self.user_id = user_id
+        self.user_id   = user_id
         self.created_at = created_at
         self.updated_at = updated_at
         self.deleted_at = deleted_at
 
 
 class GroupPhoto(db.Model):
+    __tablename__ = "group_photo"
+    
     id = db.Column(db.Integer, primary_key=True)
-    filepath = db.Column(db.String(100), unique=False, nullable=False)
+    file_path = db.Column(db.String(100), unique=False, nullable=False)
+    file_name = db.Column(db.String(100), unique=False, nullable=False)
     admin_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     no_of_faces = db.Column(db.Integer, nullable=True)
     created_at = db.Column(db.DateTime(), nullable=False, default=datetime.now)
@@ -87,8 +96,9 @@ class GroupPhoto(db.Model):
     face_embedding = db.relationship('FaceEmbedding', backref='grp_photo', lazy=True)
     clustering_log = db.relationship('ClusteringLog', backref='grp_photo', lazy=True)
 
-    def __init__(self, filepath, admin_id, no_of_faces, created_at, updated_at, deleted_at):
-        self.filepath = filepath
+    def __init__(self, file_path, file_name, admin_id, no_of_faces, created_at, updated_at, deleted_at):
+        self.file_path = file_path
+        self.file_name = file_name
         self.admin_id = admin_id
         self.no_of_faces = no_of_faces
         self.created_at = created_at
@@ -99,8 +109,8 @@ class FaceEmbedding(db.Model):
     __tablename__ = "face_embedding"
 
     id = db.Column(db.Integer, primary_key=True)
-    embedding = db.Column(db.String(2000), primary_key=False)
-    face_bbox = db.Column(db.String, nullable=True)
+    embedding = db.Column(db.TEXT, primary_key=False)
+    face_bbox = db.Column(db.TEXT, nullable=True)
     indv_id = db.Column(db.Integer, db.ForeignKey('individual_photo.id'))
     grp_photo_id = db.Column(db.Integer, db.ForeignKey('group_photo.id'), nullable=False)
 
@@ -112,6 +122,8 @@ class FaceEmbedding(db.Model):
         self.user_id = user_id
 
 class ClusteringLog(db.Model):
+    __tablename__ = "clustering_log"
+    
     id = db.Column(db.Integer, primary_key=True)
     grp_photo_ids = db.Column(db.String, db.ForeignKey('group_photo.id'), nullable=False)
     no_of_clusters = db.Column(db.Integer, nullable=True)
@@ -122,9 +134,10 @@ class ClusteringLog(db.Model):
     cluster = db.relationship('Cluster', backref='clustering_log', lazy=True)
 
 class Cluster(db.Model):
+    __tablename__ = "cluster"
+    
     id = db.Column(db.Integer, primary_key=True)
     face_embedding_id = db.Column(db.Integer, db.ForeignKey('face_embedding.id'), nullable=False)
     cluster_no = db.Column(db.Integer, nullable=False)
     clustering_log_id = db.Column(db.Integer, db.ForeignKey('clustering_log.id'), nullable=False)
     pred_indv_id = db.Column(db.Integer, db.ForeignKey('individual_photo.id'), nullable=False)
-

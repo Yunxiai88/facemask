@@ -14,7 +14,7 @@ def create_app():
     app.config['SECRET_KEY'] = "facemasksystemkey"
     app.config['UPLOAD_FOLDER_GRP'] = os.path.join('input', 'group')
     app.config['UPLOAD_FOLDER_INDV'] = os.path.join('input', 'individual')
-    app.config['PROCESSED_FOLDER'] = 'application/processed'
+    app.config['PROCESSED_FOLDER'] = 'processed'
     app.config['SESSION_TYPE'] = 'filesystem'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db2.sqlite'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -28,9 +28,13 @@ def create_app():
     from .auth import auth as auth_blueprint
     app.register_blueprint(auth_blueprint)
 
-    # blueprint for non-auth parts of app
+    # blueprint for admin routes
     from .admin import admin as admin_blueprint
     app.register_blueprint(admin_blueprint)
+
+    # blueprint for profile routes
+    from .profile import profile as profile_blueprint
+    app.register_blueprint(profile_blueprint)
 
     from main import main as main_blueprint
     app.register_blueprint(main_blueprint)
