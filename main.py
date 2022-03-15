@@ -30,7 +30,7 @@ def error():
 @login_required
 def index():
     # check whether face embedding existing in db
-    if current_user.indvPhotos:
+    if current_user.uploaded_indv_photos:
         images = util.get_file(current_user.email)
         print(images)
 
@@ -89,7 +89,6 @@ def download():
 #---------------------------------------------------------------------
 #-------------------------Execute Function----------------------------
 #---------------------------------------------------------------------
-#
 if __name__ == '__main__':
     # construct the argument parser and parse command line arguments
     ap = argparse.ArgumentParser()
