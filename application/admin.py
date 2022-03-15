@@ -1,13 +1,13 @@
-from asyncio.windows_events import NULL
 import os
 import pathlib
+from . import db
 from application import util
 from .models import GroupPhoto
-from . import db
+from asyncio.windows_events import NULL
+
 from flask import Blueprint, jsonify, request
 from flask import render_template, current_app, send_from_directory, url_for, redirect
 from flask_login import login_required, current_user
-from datetime import datetime
 
 admin = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -19,24 +19,26 @@ def upload():
     return render_template("admin.html")
 
 @admin.route('/upload', methods = ['POST'])
+@login_required
 def upload_post():
     if request.method == "POST":
         isOk = True
+        filepaths = []
+
         save_path = current_app.config['UPLOAD_FOLDER_GRP']
 
         files = request.files.getlist("files")
-        filepaths = []
         for file in files:
             result = util.save_file(save_path, file)
-            if result == 0:
+            if result == 1:
                 isOk = False
                 break
-            filepaths.append(result)
+            filepaths.append([save_path, file.filename])
         # print(current_user.id)
         
         if isOk:
-            for f in filepaths:
-                db.session.add(GroupPhoto(f,current_user.id, None, datetime.now(), datetime.now(), None))
+            for fpath, fname in filepaths:
+                db.session.add(GroupPhoto(fpath, fname, current_user.id, None))
             db.session.commit()
             print('file uploaded successful.')
         else:
@@ -45,10 +47,15 @@ def upload_post():
         return jsonify({'message': "successful"})
 
 @admin.route("/delete", methods=['POST'])
+@login_required
 def delete():
     images = []
+
     save_path = current_app.config['UPLOAD_FOLDER_GRP']
 
+    #step1: delete from db
+
+    #step2: delete from disk
     deleteImages = request.form.get('deleteImages')
     if deleteImages and len(deleteImages) > 0:
         images = deleteImages.split(',')
@@ -62,14 +69,20 @@ def delete():
 @admin.route("/view")
 @login_required
 def view():
-    images = util.get_upload_files()
-    print("view all: ", images)
+    images = []
 
-    return render_template("view.html", data=images)
+    # fetch all group photo for admin
+    group_photos = current_user.uploaded_group_photos
+
+    if group_photos:
+        images = [photo.file_name for photo in group_photos]
+        print(images)
+
+    return render_template("view.html", data=group_photos)
 
 @admin.route('/uploads/<path:filename>')
 def download_file(filename):
-    config_path = current_app.config['UPLOAD_FOLDER']
+    config_path = current_app.config['UPLOAD_FOLDER_GRP']
     upload_path = os.path.join(path.parent.parent, config_path)
 
     return send_from_directory(upload_path, filename)

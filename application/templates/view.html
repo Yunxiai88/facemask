@@ -14,7 +14,7 @@
             {% for im in data %} 
                 <div class="col-sm-3 col-sm-offset-1">
                     <li class="delete">
-                        <img name="{{im}}" src="{{url_for('admin.download_file', filename='')}}{{im}}" class="img-circle img-thumbnail" style="width:100%" alt="Image">
+                        <img name="{{im.file_name}}" src="{{url_for('admin.download_file', filename='')}}{{im.file_name}}" class="img-circle img-thumbnail" style="width:100%" alt="Image">
                     </li>
                 </div>
             {% endfor %}

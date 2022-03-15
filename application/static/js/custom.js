@@ -2,7 +2,7 @@ $(document).ready(function () {
 
   $('#files').fileinput({
     uploadUrl: '/admin/upload',
-    theme : 'explorer-fas',
+    theme : 'fas',
     uploadAsync: false,
     showRemove :true,
     showPreview: true,

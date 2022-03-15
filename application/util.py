@@ -34,7 +34,7 @@ def create_folder(email):
 
 # get all uploaded file
 def get_upload_files() :
-    upload_path = current_app.config['UPLOAD_FOLDER']
+    upload_path = current_app.config['UPLOAD_FOLDER_INDV']
 
     if not os.path.exists(upload_path):
         print("create a new folder")
@@ -53,6 +53,9 @@ def allowed_file(filename):
 
 # save common file
 def save_file(fpath, file):
+    if not os.path.exists(fpath):
+        os.makedirs(fpath)
+
     if allowed_file(file.filename):
         filename = secure_filename(file.filename)
         file.save(os.path.join(fpath, filename))

@@ -96,13 +96,13 @@ class GroupPhoto(db.Model):
     face_embedding = db.relationship('FaceEmbedding', backref='group_photo', lazy=True)
     clustering_log = db.relationship('ClusteringLog', backref='group_photo', lazy=True)
 
-    def __init__(self, file_path, file_name, admin_id, no_of_faces, created_at, updated_at, deleted_at):
+    def __init__(self, file_path, file_name, admin_id, no_of_faces, deleted_at=None):
         self.file_path = file_path
         self.file_name = file_name
         self.admin_id = admin_id
         self.no_of_faces = no_of_faces
-        self.created_at = created_at
-        self.updated_at = updated_at
+        #self.created_at = created_at
+        #self.updated_at = updated_at
         self.deleted_at = deleted_at
 
 class FaceEmbedding(db.Model):
