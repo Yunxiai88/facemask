@@ -2,7 +2,7 @@ import json
 from . import db
 import face_recognition
 
-from .models import FaceEmbedding, IndvPhoto
+from .models import FaceEmbedding, IndividualPhoto
 
 def get_embedding(file_stream):
     # Load the jpg file into a numpy array
@@ -43,15 +43,15 @@ def save_faceEmbedding(embedding, bbox, group_photo_id=None, indv_photo_id=None)
     db.session.add(faceEmbedding)
     db.session.commit()
 
-def save_IndividualPhoto(name, file_path, file_name, uploaded_by, embedding, bbox, group_photo_id=None):
+def save_IndividualPhoto(name, file_path, file_name, user_id, embedding, face_bbox, grp_photo_id=None):
     try:
-        individualPhoto = IndvPhoto(name, file_path, file_name, uploaded_by)
+        individualPhoto = IndividualPhoto(name, file_path, file_name, user_id)
         db.session.add(individualPhoto)
         db.session.flush()
 
         print("Temp Individual ID = ", individualPhoto.id)
 
-        faceEmbedding = FaceEmbedding(embedding, bbox, group_photo_id, individualPhoto.id)
+        faceEmbedding = FaceEmbedding(embedding, face_bbox, individualPhoto.id, grp_photo_id)
         db.session.add(faceEmbedding)
         db.session.flush()
 

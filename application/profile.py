@@ -3,10 +3,10 @@ import pathlib
 from . import db
 from sqlalchemy import null
 
-from .models import IndvPhoto, FaceEmbedding
+from .models import IndividualPhoto, FaceEmbedding
 from application import util, users, photos
 
-from flask_login import current_user
+from flask_login import current_user, login_required
 from flask import Blueprint, flash, jsonify, current_app, session
 from flask import render_template, request, redirect, url_for, send_from_directory
 
@@ -15,8 +15,9 @@ profile = Blueprint('profile', __name__, url_prefix='/profile')
 path = pathlib.Path(__file__)
 
 @profile.route('/')
+@login_required
 def walk_face():
-    faces = current_user.indvPhotos
+    faces = current_user.uploaded_indv_photos
 
     face_list = []
 
@@ -27,12 +28,14 @@ def walk_face():
     return render_template('profile.html', data=face_list, appends=2-len(face_list))
 
 @profile.route('/upload')
+@login_required
 def profile_page():
     return render_template('face_image.html')
 
 @profile.route('/query/<path:indvId>')
+@login_required
 def query_face(indvId):
-    indvPhoto = IndvPhoto.query.get(indvId)
+    indvPhoto = IndividualPhoto.query.get(indvId)
 
     file_name = indvPhoto.file_name
     file_path = os.path.join(path.parent.parent, indvPhoto.file_path)
@@ -40,6 +43,7 @@ def query_face(indvId):
     return send_from_directory(file_path, file_name)
 
 @profile.route('/delete/<path:indvId>')
+@login_required
 def delete_face(indvId):
 
     result_code = 1
@@ -47,7 +51,7 @@ def delete_face(indvId):
 
     try:
         #step1: delete from db
-        indvPhoto = IndvPhoto.query.get(indvId)
+        indvPhoto = IndividualPhoto.query.get(indvId)
         db.session.delete(indvPhoto)
         db.session.flush()
         print("1 --> delete individual photo [{}] from db.".format(indvId))
@@ -97,6 +101,7 @@ def delete_face(indvId):
     return redirect(url_for("profile.walk_face"))
 
 @profile.route('/upload', methods = ['POST'])
+@login_required
 def upload_face():
     if request.method == "POST":
         try:
@@ -117,12 +122,13 @@ def upload_face():
                 return jsonify({"error": "file uploaded failed."})
             
             #step3: save to db
-            result = photos.save_IndividualPhoto(name = username, 
+            result = photos.save_IndividualPhoto(
+                                    name      = username, 
                                     file_path = os.path.join(current_app.config['PROCESSED_FOLDER'], current_user.email),
                                     file_name = file.filename,
-                                    uploaded_by = current_user.id,
+                                    user_id   = current_user.id,
                                     embedding = data["embedding"],
-                                    bbox = data["bbox"])
+                                    face_bbox = data["bbox"])
             if result == 1:
                 print("save info to database failed.")
 

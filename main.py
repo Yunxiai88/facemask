@@ -9,8 +9,9 @@ from glob import glob
 from io import BytesIO
 from zipfile import ZipFile
 
-from flask import Blueprint, Flask, render_template, request, send_file
 from flask_login import login_required, current_user
+from flask import Blueprint, Flask
+from flask import redirect, url_for, render_template, request, send_file
 
 from application import db, create_app, util
 
@@ -31,14 +32,15 @@ def error():
 def index():
     # check whether face embedding existing in db
     if current_user.uploaded_indv_photos:
-        images = util.get_file(current_user.email)
-        print(images)
+
+        face_list = [face.id for face in current_user.uploaded_indv_photos]
+        print(face_list)
 
         # return to index template
-        return render_template("index.html", data=images)
+        return render_template("index.html", data=face_list)
     else:
         # return to face image template
-        return render_template("face_image.html")
+        return redirect(url_for("profile.walk_face"))
 
 @main.route("/process", methods=['POST'])
 def process():
