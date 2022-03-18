@@ -37,6 +37,7 @@ def upload_post():
             filepaths.append(os.path.join(save_path, file.filename))
 
         if isOk:
+            # save to DB
             result = photos.save_GroupPhotos(filepaths, current_user.id)
             if result == 1:
                 print("save info to database failed.")
@@ -84,12 +85,12 @@ def view():
 
     # fetch all group photo for admin
     group_photos = current_user.uploaded_group_photos
-
+    print(group_photos)
     if group_photos:
-        images = [photo.file_name for photo in group_photos]
+        images = [os.path.split(photo.file_path)[1] for photo in group_photos]
         print(images)
 
-    return render_template("view.html", data=group_photos)
+    return render_template("view.html", data=images)
 
 @admin.route('/uploads/<path:filename>')
 def download_file(filename):
