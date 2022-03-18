@@ -68,7 +68,7 @@ output/*/*.jpg
 application/data/*
 logs/*
 
-application/processed/*
+processed/*
 
 input/group/*
 input/individual/*

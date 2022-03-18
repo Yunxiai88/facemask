@@ -1,8 +1,9 @@
 import os
 import pathlib
+
 from . import db
-from application import util
-from .models import GroupPhoto
+from application import photos, util, face_recognition
+from .models import GroupPhoto, FaceEmbedding
 from asyncio.windows_events import NULL
 
 from flask import Blueprint, jsonify, request
@@ -33,16 +34,26 @@ def upload_post():
             if result == 1:
                 isOk = False
                 break
-            filepaths.append([save_path, file.filename])
-        # print(current_user.id)
-        
+            filepaths.append(os.path.join(save_path, file.filename))
+
         if isOk:
-            for fpath, fname in filepaths:
-                db.session.add(GroupPhoto(fpath, fname, current_user.id, None))
-            db.session.commit()
+            result = photos.save_GroupPhotos(filepaths, current_user.id)
+            if result == 1:
+                print("save info to database failed.")
+                
+                # delete uploaded file
+                result = util.delete_group_files(filepaths)
+                if result == 1:
+                    print("delete files failed.")
+
+                # return error message
+                return jsonify({"error": "file uploaded failed."})
+            
             print('file uploaded successful.')
+            
         else:
             print('file uploaded failed.')
+            return jsonify({"error": "file uploaded failed."})
         
         return jsonify({'message': "successful"})
 
