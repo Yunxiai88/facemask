@@ -146,4 +146,4 @@ class Cluster(db.Model):
     face_embedding_id = db.Column(db.Integer, db.ForeignKey('face_embedding.id'), nullable=False)
     cluster_no = db.Column(db.Integer, nullable=False)
     clustering_log_id = db.Column(db.Integer, db.ForeignKey('clustering_log.id'), nullable=False)
-    pred_indv_id = db.Column(db.Integer, db.ForeignKey('individual_photo.id'), nullable=False)
+    pred_indv_id = db.Column(db.Integer, db.ForeignKey('individual_photo.id'), nullable=True)
