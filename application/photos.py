@@ -23,6 +23,14 @@ def save_IndividualPhoto(name, file_path, user_id, embedding, face_bbox):
         print(e)
         return 1
 
+def get_all_indv_photos(user_id):
+    try:
+        indv_photos = IndividualPhoto.query.filter(user_id=user_id)
+        return indv_photos
+    except Exception as e:
+        print(e)
+        return 1
+
 def save_GroupPhotos(file_paths, admin_id):
     try:
         face_data = []
@@ -36,7 +44,24 @@ def save_GroupPhotos(file_paths, admin_id):
             groupPhoto.no_of_faces = len(d)
         db.session.bulk_insert_mappings(FaceEmbedding, face_data)
         db.session.commit()
-        return 0
+        return face_data
+    except Exception as e:
+        print(e)
+        return 1
+
+def get_grp_photo(grp_photo_id):
+    try:
+        grp_photo = GroupPhoto.query.filter_by(id=grp_photo_id).first()
+        print("type of grp_photo - ",grp_photo)
+        return grp_photo
+    except Exception as e:
+        print(e)
+        return 1
+
+def get_all_grp_photos(admin_id):
+    try:
+        grp_photo = GroupPhoto.query.filter_by(admin_id=admin_id).all()
+        return grp_photo
     except Exception as e:
         print(e)
         return 1

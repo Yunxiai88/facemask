@@ -92,8 +92,7 @@ class GroupPhoto(db.Model):
     deleted_at = db.Column(db.DateTime(), nullable=True)
 
     # one-to-many
-    face_embedding = db.relationship('FaceEmbedding', backref='group_photo', lazy=True)
-    clustering_log = db.relationship('ClusteringLog', backref='group_photo', lazy=True)
+    face_embeddings = db.relationship('FaceEmbedding', backref='group_photo', lazy=True)
 
     def __init__(self, file_path, admin_id, no_of_faces, deleted_at=None):
         self.file_path = file_path
@@ -125,13 +124,20 @@ class ClusteringLog(db.Model):
     __tablename__ = "clustering_log"
     
     id = db.Column(db.Integer, primary_key=True)
-    grp_photo_ids = db.Column(db.String, db.ForeignKey('group_photo.id'), nullable=False)
+    grp_photo_ids = db.Column(db.TEXT, nullable=False)
     no_of_clusters = db.Column(db.Integer, nullable=True)
-    clustered_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    cluster_ids = db.Column(db.TEXT, nullable=True)
+    clustered_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     clustered_at = db.Column(db.DateTime(), nullable=False, default=datetime.now)
 
     # one-to-many
-    cluster = db.relationship('Cluster', backref='clustering_log', lazy=True)
+    clusters = db.relationship('Cluster', backref='clustering_log', lazy=True)
+
+    def __init__(self, grp_photo_ids, no_of_clusters, cluster_ids, clustered_by):
+        self.grp_photo_ids = grp_photo_ids
+        self.no_of_clusters = no_of_clusters
+        self.cluster_ids =cluster_ids
+        self.clustered_by = clustered_by
 
 class Cluster(db.Model):
     __tablename__ = "cluster"

@@ -19,6 +19,17 @@ path = pathlib.Path(__file__)
 def upload():
     return render_template("admin.html")
 
+@admin.route('/cluster', methods=['GET'])
+@login_required
+def cluster_faces():
+    # start clustering
+    res_cluster = face_recognition.clustering_group_photos(current_user.id)
+    if res_cluster==1:
+        # return error message
+        return jsonify({"error": "Clustering failed."})
+
+    return jsonify({'message': "successful"})
+
 @admin.route('/upload', methods = ['POST'])
 @login_required
 def upload_post():
@@ -38,20 +49,20 @@ def upload_post():
 
         if isOk:
             # save to DB
-            result = photos.save_GroupPhotos(filepaths, current_user.id)
-            if result == 1:
+            res_data = photos.save_GroupPhotos(filepaths, current_user.id)
+            if res_data == 1:
                 print("save info to database failed.")
                 
                 # delete uploaded file
-                result = util.delete_group_files(filepaths)
-                if result == 1:
+                res_data = util.delete_group_files(filepaths)
+                if res_data == 1:
                     print("delete files failed.")
 
                 # return error message
                 return jsonify({"error": "file uploaded failed."})
             
             print('file uploaded successful.')
-            
+
         else:
             print('file uploaded failed.')
             return jsonify({"error": "file uploaded failed."})
