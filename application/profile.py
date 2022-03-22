@@ -4,7 +4,7 @@ from . import db
 from sqlalchemy import null
 
 from .models import IndividualPhoto, FaceEmbedding
-from application import util, users, photos
+from application import util, users, photos, face_recognition
 
 from flask_login import current_user, login_required
 from flask import Blueprint, flash, jsonify, current_app, session
@@ -109,7 +109,7 @@ def upload_face():
             file = request.files['faceFile']
 
             #step1: get face embending
-            data = photos.get_embedding(file)
+            data = face_recognition.get_embedding(file)
             print("embedding info: " + str(data))
 
             if data["code"] != "0":
@@ -124,8 +124,8 @@ def upload_face():
             #step3: save to db
             result = photos.save_IndividualPhoto(
                                     name      = username, 
-                                    file_path = os.path.join(current_app.config['PROCESSED_FOLDER'], current_user.email),
-                                    file_name = file.filename,
+                                    file_path = os.path.join(current_app.config['PROCESSED_FOLDER'], current_user.email,file.filename),
+                                    # file_name = file.filename,
                                     user_id   = current_user.id,
                                     embedding = data["embedding"],
                                     face_bbox = data["bbox"])

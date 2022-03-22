@@ -94,3 +94,24 @@ def delete_processed_file(filename):
     except Exception as e:
         print('Failed to delete %s. Reason: %s' % (delete_file, e))
         return 1
+
+# delete group files
+def delete_group_files(filenames):
+    try:
+        for filename in filenames:
+            if os.path.isfile(filename):
+
+                os.unlink(filename)
+
+                # log file
+                print(filename + " been removed.")
+                
+            else:
+                print(filename + " not exist.")
+                return 1
+
+        return 0
+
+    except Exception as e:
+        print('Failed to delete %s. Reason: %s' % (filename, e))
+        return 1

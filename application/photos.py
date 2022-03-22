@@ -1,62 +1,67 @@
 import json
 from . import db
-import face_recognition
+import os
+from application import face_recognition
+from .models import FaceEmbedding, IndividualPhoto, GroupPhoto
 
-from .models import FaceEmbedding, IndividualPhoto
+# def save_faceEmbedding(embedding, bbox, group_photo_id=None, indv_photo_id=None):
+#     faceEmbedding = FaceEmbedding(embedding, bbox, group_photo_id, indv_photo_id)
+#     db.session.add(faceEmbedding)
+#     db.session.commit()
 
-def get_embedding(file_stream):
-    # Load the jpg file into a numpy array
-    image = face_recognition.load_image_file(file_stream)
-
-    filename = file_stream.filename
-
-    # Find all the faces in the image
-    face_locations = face_recognition.face_locations(image, model="hog")
-    print("I found {0} face(s) in photo {1}.".format(len(face_locations), filename))
-
-    face_encoding = ""
-    if len(face_locations) == 0:
-        return {
-            "code" : "1", 
-            "message" : "No face found in this photo, Pls try another one."
-        }
-    elif len(face_locations) == 1:
-        face_encodings = face_recognition.face_encodings(image, face_locations)
-
-        print("face location = ", face_locations[0])
-        print("face encoding = ", face_encodings[0])
-
-        return {
-            "code" : "0", 
-            "message" : "face found.",
-            "embedding" : str(face_encodings[0]),
-            "bbox" : str(face_locations[0])
-        }
-    else:
-        return {
-            "code: 2", 
-            "message: There are more than one face in the photo, Pls try another one."
-        }
-
-def save_faceEmbedding(embedding, bbox, group_photo_id=None, indv_photo_id=None):
-    faceEmbedding = FaceEmbedding(embedding, bbox, group_photo_id, indv_photo_id)
-    db.session.add(faceEmbedding)
-    db.session.commit()
-
-def save_IndividualPhoto(name, file_path, file_name, user_id, embedding, face_bbox, grp_photo_id=None):
+def save_IndividualPhoto(name, file_path, user_id, embedding, face_bbox):
     try:
-        individualPhoto = IndividualPhoto(name, file_path, file_name, user_id)
+        individualPhoto = IndividualPhoto(name, file_path, user_id, embedding, face_bbox)
         db.session.add(individualPhoto)
         db.session.flush()
 
         print("Temp Individual ID = ", individualPhoto.id)
 
-        faceEmbedding = FaceEmbedding(embedding, face_bbox, individualPhoto.id, grp_photo_id)
-        db.session.add(faceEmbedding)
-        db.session.flush()
-
         db.session.commit()
         return 0
+    except Exception as e:
+        print(e)
+        return 1
+
+def get_all_indv_photos(user_id):
+    try:
+        indv_photos = IndividualPhoto.query.filter(user_id=user_id)
+        return indv_photos
+    except Exception as e:
+        print(e)
+        return 1
+
+def save_GroupPhotos(file_paths, admin_id):
+    try:
+        face_data = []
+        for file_path in file_paths:
+            groupPhoto = GroupPhoto(file_path, admin_id, None)
+            db.session.add(groupPhoto)
+            db.session.flush()
+            boxes, embeddings = face_recognition.get_all_faces(file_path)
+            d = [{'grp_photo_id':groupPhoto.id, 'face_bbox':str(box), 'embedding':str(emb), 'indv_id': None} for (box, emb) in zip(boxes, embeddings)]
+            face_data.extend(d)
+            groupPhoto.no_of_faces = len(d)
+        db.session.bulk_insert_mappings(FaceEmbedding, face_data)
+        db.session.commit()
+        return face_data
+    except Exception as e:
+        print(e)
+        return 1
+
+def get_grp_photo(grp_photo_id):
+    try:
+        grp_photo = GroupPhoto.query.filter_by(id=grp_photo_id).first()
+        print("type of grp_photo - ",grp_photo)
+        return grp_photo
+    except Exception as e:
+        print(e)
+        return 1
+
+def get_all_grp_photos(admin_id):
+    try:
+        grp_photo = GroupPhoto.query.filter_by(admin_id=admin_id).all()
+        return grp_photo
     except Exception as e:
         print(e)
         return 1

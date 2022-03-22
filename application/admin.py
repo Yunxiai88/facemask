@@ -1,8 +1,9 @@
 import os
 import pathlib
+
 from . import db
-from application import util
-from .models import GroupPhoto
+from application import photos, util, face_recognition
+from .models import GroupPhoto, FaceEmbedding
 from asyncio.windows_events import NULL
 
 from flask import Blueprint, jsonify, request
@@ -17,6 +18,17 @@ path = pathlib.Path(__file__)
 @login_required
 def upload():
     return render_template("admin.html")
+
+@admin.route('/cluster', methods=['GET'])
+@login_required
+def cluster_faces():
+    # start clustering
+    res_cluster = face_recognition.clustering_group_photos(current_user.id)
+    if res_cluster==1:
+        # return error message
+        return jsonify({"error": "Clustering failed."})
+
+    return jsonify({'message': "successful"})
 
 @admin.route('/upload', methods = ['POST'])
 @login_required
@@ -33,16 +45,27 @@ def upload_post():
             if result == 1:
                 isOk = False
                 break
-            filepaths.append([save_path, file.filename])
-        # print(current_user.id)
-        
+            filepaths.append(os.path.join(save_path, file.filename))
+
         if isOk:
-            for fpath, fname in filepaths:
-                db.session.add(GroupPhoto(fpath, fname, current_user.id, None))
-            db.session.commit()
+            # save to DB
+            res_data = photos.save_GroupPhotos(filepaths, current_user.id)
+            if res_data == 1:
+                print("save info to database failed.")
+                
+                # delete uploaded file
+                res_data = util.delete_group_files(filepaths)
+                if res_data == 1:
+                    print("delete files failed.")
+
+                # return error message
+                return jsonify({"error": "file uploaded failed."})
+            
             print('file uploaded successful.')
+
         else:
             print('file uploaded failed.')
+            return jsonify({"error": "file uploaded failed."})
         
         return jsonify({'message': "successful"})
 
@@ -73,12 +96,12 @@ def view():
 
     # fetch all group photo for admin
     group_photos = current_user.uploaded_group_photos
-
+    print(group_photos)
     if group_photos:
-        images = [photo.file_name for photo in group_photos]
+        images = [os.path.split(photo.file_path)[1] for photo in group_photos]
         print(images)
 
-    return render_template("view.html", data=group_photos)
+    return render_template("view.html", data=images)
 
 @admin.route('/uploads/<path:filename>')
 def download_file(filename):
