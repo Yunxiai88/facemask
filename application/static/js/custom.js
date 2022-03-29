@@ -113,21 +113,25 @@ $(document).ready(function () {
 
   $('#deleteBtn').click(() => {
     if ($('li.selected').length > 0) {
-      var value = []
-      $('li.selected').each(function() {
-        var imname = $(this).find('img').attr("name");
-        value.push(imname)
-      });
+      if(confirm("Are you confirm to delete these photos?")) {
+        var value = []
+        $('li.selected').each(function() {
+          var imname = $(this).find('img').attr("name");
+          value.push(imname)
+        });
 
-      var doc = document.getElementById("deleteForm");
-      // form a input element
-      var input = document.createElement('input')
-      input.type = 'hidden'
-      input.name = 'deleteImages'
-      input.value = value
-      doc.appendChild(input)
+        var doc = document.getElementById("deleteForm");
+        // form a input element
+        var input = document.createElement('input')
+        input.type = 'hidden'
+        input.name = 'deleteImages'
+        input.value = value
+        doc.appendChild(input)
 
-      doc.submit();
+        doc.submit();
+      } else {
+        return false
+      }
     } else {
       alert("Please select at least one image to process.");
       return false
