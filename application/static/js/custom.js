@@ -18,7 +18,7 @@ $(document).ready(function () {
 
   $('#faceFile').fileinput({
       uploadUrl: '/profile/upload',
-      theme : 'explorer-fas',
+      theme : 'fas',
       uploadAsync: false,
       maxFileCount: 1,
       minFileCount: 1,

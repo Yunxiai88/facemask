@@ -1,4 +1,5 @@
 import os
+import json
 import pathlib
 from . import db
 from sqlalchemy import null
@@ -37,8 +38,11 @@ def profile_page():
 def query_face(indvId):
     indvPhoto = IndividualPhoto.query.get(indvId)
 
-    file_name = indvPhoto.file_name
-    file_path = os.path.join(path.parent.parent, indvPhoto.file_path)
+    file_path = indvPhoto.file_path
+
+    file_name = file_path.split('\\')[-1]
+    file_path = file_path.replace(file_name, '')
+    file_path = os.path.join(path.parent.parent, file_path)
 
     return send_from_directory(file_path, file_name)
 
@@ -111,6 +115,8 @@ def upload_face():
             #step1: get face embending
             data = face_recognition.get_embedding(file)
             print("embedding info: " + str(data))
+
+            #data = json.loads(data_str)
 
             if data["code"] != "0":
                 return jsonify({"error": data["message"]})

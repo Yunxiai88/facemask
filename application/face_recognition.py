@@ -1,8 +1,9 @@
-import face_recognition
-import numpy as np
 import cv2
-from sklearn.cluster import DBSCAN
+import json
+import numpy as np
 import face_recognition
+from datetime import datetime
+from sklearn.cluster import DBSCAN
 from application import util, photos, clustering
 
 def get_embedding(file_stream):
@@ -10,10 +11,16 @@ def get_embedding(file_stream):
     image = face_recognition.load_image_file(file_stream)
 
     filename = file_stream.filename
+    print("Processing photo: {0}\n".format(filename))
 
     # Find all the faces in the image
+    print("Detecting faces start at {0}".format(datetime.now().strftime("%m/%d/%Y %H:%M:%S")))
+
+    # Find all the faces in the image using the default HOG-based model.
+    # This method is fairly accurate, but not as accurate as the CNN model and not GPU accelerated.
     face_locations = face_recognition.face_locations(image, model="hog")
-    print("I found {0} face(s) in photo {1}.".format(len(face_locations), filename))
+
+    print("I found {0} face(s) at {1}\n".format(len(face_locations), datetime.now().strftime("%m/%d/%Y %H:%M:%S")))
 
     face_encoding = ""
     if len(face_locations) == 0:
@@ -35,8 +42,8 @@ def get_embedding(file_stream):
         }
     else:
         return {
-            "code: 2", 
-            "message: There are more than one face in the photo, Pls try another one."
+            "code": "2", 
+            "message": "There are more than one face in the photo, Pls try another one."
         }
 
 ###########################################################################

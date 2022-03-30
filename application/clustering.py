@@ -11,10 +11,11 @@ def add_clustering_results(emb_ids, grp_photo_ids, clt_labels):
     cluster_ids = np.unique(clt_labels)
     g = str(grp_photo_ids)
     x = str(cluster_ids)
-    print("cluster_ids: ",cluster_ids)
+    print("cluster_ids: ", cluster_ids)
     print("user_id: ", current_user.id)
+
     # insert record in clustering_log table
-    clustering_log = ClusteringLog(g,len(cluster_ids), x, current_user.id)
+    clustering_log = ClusteringLog(g, len(cluster_ids), x, current_user.id)
     db.session.add(clustering_log)
     db.session.flush()
 
