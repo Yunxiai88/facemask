@@ -3,7 +3,7 @@ import numpy as np
 import cv2
 from sklearn.cluster import DBSCAN
 import face_recognition
-from application import photos, clustering
+from application import util, photos, clustering
 
 def get_embedding(file_stream):
     # Load the jpg file into a numpy array
@@ -66,7 +66,7 @@ def clustering_group_photos(admin_id):
     # get all face_embedding data of the queried photos
     [all_embeddings, emb_ids, grp_ids, img_pths, bboxes] = map(list,zip(*[([float(j) for j in embed.embedding[1:-1].split()], embed.id, i.id, i.file_path, [int(k) for k in embed.face_bbox[1:-1].split(', ')]) for i in all_grp_photos for embed in i.face_embeddings]))
     # print(all_embeddings, emb_ids, grp_ids, img_pths, bboxes)
-    print("type of all_embeddings: ", type(all_embeddings))
+    print("type of all_embeddings: {0}, len is {1}".format(type(all_embeddings), len(all_embeddings)))
     
     try:
         # cluster embeddings
@@ -76,9 +76,10 @@ def clustering_group_photos(admin_id):
         # determine the total number of unique faces found in the dataset
         all_labels = clt.labels_
         # clusterIDs = np.unique(all_labels)
-        # print('all labels: ',all_labels)
+        # print('all labels: ', all_labels)
         # print('unique ids: ', clusterIDs)
 
+        no_face_index = []
         # check if unknown label has a face
         unknown_faces = np.where(all_labels == -1)[0]
         for f in unknown_faces:
@@ -92,13 +93,18 @@ def clustering_group_photos(admin_id):
             face = face_recognition.face_locations(rgb)
             # if not a face, delete it
             if not face:
-                all_labels = np.delete(all_labels, f)
-                del all_embeddings[f]
-                del emb_ids[f]
-                del grp_ids[f]
-        # print('all labels: ',all_labels)
+                no_face_index.append(f)
+                # all_labels = np.delete(all_labels, f)
+                # del all_embeddings[f]
+                # del emb_ids[f]
+                # del grp_ids[f]
+        print("no face index: ", no_face_index)
+
+        all_labels = util.delete_list_by_index(all_labels, no_face_index)
+        emb_ids = util.delete_list_by_index(emb_ids, no_face_index)
+        grp_ids = util.delete_list_by_index(grp_ids, no_face_index)
         # print('unique ids: ', np.unique(all_labels))
-        print("grp_ids --- ",grp_ids)
+        print("grp_ids --- ", grp_ids)
         # Add clustering results in DB
         res = clustering.add_clustering_results(emb_ids, grp_ids, all_labels)
 

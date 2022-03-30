@@ -35,11 +35,14 @@ def save_GroupPhotos(file_paths, admin_id):
     try:
         face_data = []
         for file_path in file_paths:
+            print("save group photo for {0}".format(file_path))
             groupPhoto = GroupPhoto(file_path, admin_id, None)
             db.session.add(groupPhoto)
             db.session.flush()
+
+            print("get all faces for {0}".format(file_path))
             boxes, embeddings = face_recognition.get_all_faces(file_path)
-            d = [{'grp_photo_id':groupPhoto.id, 'face_bbox':str(box), 'embedding':str(emb), 'indv_id': None} for (box, emb) in zip(boxes, embeddings)]
+            d = [{'grp_photo_id':groupPhoto.id, 'face_bbox':str(box), 'embedding':str(emb), 'pred_indv_id': None} for (box, emb) in zip(boxes, embeddings)]
             face_data.extend(d)
             groupPhoto.no_of_faces = len(d)
         db.session.bulk_insert_mappings(FaceEmbedding, face_data)
@@ -61,6 +64,7 @@ def get_grp_photo(grp_photo_id):
 def get_all_grp_photos(admin_id):
     try:
         grp_photo = GroupPhoto.query.filter_by(admin_id=admin_id).all()
+        print("there are {0} photos".format(len(grp_photo)))
         return grp_photo
     except Exception as e:
         print(e)

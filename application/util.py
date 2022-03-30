@@ -115,3 +115,6 @@ def delete_group_files(filenames):
     except Exception as e:
         print('Failed to delete %s. Reason: %s' % (filename, e))
         return 1
+
+def delete_list_by_index(lst, idx):
+    return [j for i, j in enumerate(lst) if i not in idx]
