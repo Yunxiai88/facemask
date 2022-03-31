@@ -118,3 +118,8 @@ def delete_group_files(filenames):
 
 def delete_list_by_index(lst, idx):
     return [j for i, j in enumerate(lst) if i not in idx]
+
+def get_file_name_from_path(file_path):
+    file_name = file_path.split('\\')[-1]
+    file_path = file_path.replace(file_name, '')
+    return file_name, file_path

@@ -1,7 +1,8 @@
+import os
 import json
 from . import db
-import os
-from application import face_recognition
+import numpy as np
+from application import face_model
 from .models import FaceEmbedding, IndividualPhoto, GroupPhoto
 
 def get_faceEmbeddings(grp_photo_ids):
@@ -15,4 +16,13 @@ def get_faceEmbeddings(grp_photo_ids):
         # print(i.face_bbox)
         # print(type(i.embedding))
     return face_embeddings
-    
+
+def get_group_faceEmbeddings_by_indvId(pred_indv_id = None):
+    face_embeddings = FaceEmbedding.query.filter(FaceEmbedding.pred_indv_id == pred_indv_id).all()
+    return face_embeddings
+
+def convert_embedding(embedding):
+    encode = embedding.replace('[','')
+    encode = encode.replace(']','')
+    encode = np.fromstring(encode, dtype=float, sep=' ')
+    return encode

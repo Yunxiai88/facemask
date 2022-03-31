@@ -127,3 +127,7 @@ def clustering_group_photos(admin_id):
 
         return 1
 
+def is_face_matching(known_face_encodings, face_encoding_to_check, tolerance=0.6):
+    print("matching individual face with group photo")
+    match_label = face_recognition.compare_faces(known_face_encodings, face_encoding_to_check, tolerance)
+    return match_label

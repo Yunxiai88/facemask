@@ -1,7 +1,7 @@
 import json
 from . import db
 import os
-from application import face_recognition
+from application import face_model
 from .models import FaceEmbedding, IndividualPhoto, GroupPhoto
 
 # def save_faceEmbedding(embedding, bbox, group_photo_id=None, indv_photo_id=None):
@@ -18,10 +18,10 @@ def save_IndividualPhoto(name, file_path, user_id, embedding, face_bbox):
         print("Temp Individual ID = ", individualPhoto.id)
 
         db.session.commit()
-        return 0
+        return individualPhoto
     except Exception as e:
         print(e)
-        return 1
+        return None
 
 def get_all_indv_photos(user_id):
     try:
@@ -41,7 +41,7 @@ def save_GroupPhotos(file_paths, admin_id):
             db.session.flush()
 
             print("get all faces for {0}".format(file_path))
-            boxes, embeddings = face_recognition.get_all_faces(file_path)
+            boxes, embeddings = face_model.get_all_faces(file_path)
             d = [{'grp_photo_id':groupPhoto.id, 'face_bbox':str(box), 'embedding':str(emb), 'pred_indv_id': None} for (box, emb) in zip(boxes, embeddings)]
             face_data.extend(d)
             groupPhoto.no_of_faces = len(d)

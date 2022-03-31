@@ -5,7 +5,7 @@ from . import db
 from sqlalchemy import null
 
 from .models import IndividualPhoto, FaceEmbedding
-from application import util, users, photos, face_recognition
+from application import util, users, photos, face_model, face_embeddings
 
 from flask_login import current_user, login_required
 from flask import Blueprint, flash, jsonify, current_app, session
@@ -38,10 +38,7 @@ def profile_page():
 def query_face(indvId):
     indvPhoto = IndividualPhoto.query.get(indvId)
 
-    file_path = indvPhoto.file_path
-
-    file_name = file_path.split('\\')[-1]
-    file_path = file_path.replace(file_name, '')
+    file_name, file_path = util.get_file_name_from_path(indvPhoto.file_path)
     file_path = os.path.join(path.parent.parent, file_path)
 
     return send_from_directory(file_path, file_name)
@@ -62,8 +59,8 @@ def delete_face(indvId):
 
         #step2: delete individual face embedding
         for aa in db.session.query(FaceEmbedding).\
-                            filter(FaceEmbedding.indv_photo_id == indvId).\
-                            filter(FaceEmbedding.group_photo_id == None):
+                            filter(FaceEmbedding.pred_indv_id == indvId).\
+                            filter(FaceEmbedding.grp_photo_id == None):
             print("-------", str(aa.embedding))
 
             db.session.delete(aa)
@@ -72,20 +69,21 @@ def delete_face(indvId):
 
         #step3: update individual id for group photos
         embeddings = FaceEmbedding.query.filter(
-                    FaceEmbedding.group_photo_id != None
+                    FaceEmbedding.grp_photo_id != None
                 ).filter(
-                    FaceEmbedding.indv_photo_id == indvId
+                    FaceEmbedding.pred_indv_id == indvId
                 ).all()
 
         if embeddings:
             print("Having group embeddings to update.")
             for bb in embeddings:
-                bb.indv_photo_id = None
+                bb.pred_indv_id = None
             db.session.flush()
             print("3 --> update individual related group embedding in db.")
 
         #step4: remove file from disk
-        result_code = util.delete_processed_file(indvPhoto.file_name)
+        file_name, file_path = util.get_file_name_from_path(indvPhoto.file_path)
+        result_code = util.delete_processed_file(file_name)
         if result_code == 1:
             print("delete file failed.")
         else:
@@ -113,8 +111,8 @@ def upload_face():
             file = request.files['faceFile']
 
             #step1: get face embending
-            data = face_recognition.get_embedding(file)
-            print("embedding info: " + str(data))
+            data = face_model.get_embedding(file)
+            # print("embedding info: " + str(data))
 
             #data = json.loads(data_str)
 
@@ -128,14 +126,14 @@ def upload_face():
                 return jsonify({"error": "file uploaded failed."})
             
             #step3: save to db
-            result = photos.save_IndividualPhoto(
+            indvPhoto = photos.save_IndividualPhoto(
                                     name      = username, 
-                                    file_path = os.path.join(current_app.config['PROCESSED_FOLDER'], current_user.email,file.filename),
+                                    file_path = os.path.join(current_app.config['PROCESSED_FOLDER'], current_user.email, file.filename),
                                     # file_name = file.filename,
                                     user_id   = current_user.id,
                                     embedding = data["embedding"],
                                     face_bbox = data["bbox"])
-            if result == 1:
+            if indvPhoto is None:
                 print("save info to database failed.")
 
                 # delete uploaded file
@@ -146,6 +144,23 @@ def upload_face():
                 # return error message
                 return jsonify({"error": "file uploaded failed."})
             
+            #step4: match in group face embending
+            group_faces = face_embeddings.get_group_faceEmbeddings_by_indvId()
+            if group_faces:
+                known_face_encodings = [face_embeddings.convert_embedding(f.embedding) for f in group_faces]
+                face_encoding_to_check = face_embeddings.convert_embedding(data["embedding"])
+
+                match_labels = face_model.is_face_matching(known_face_encodings, face_encoding_to_check)
+                print("match labels: ", match_labels)
+
+                face_mapping = [{
+                    'id':face.id, 
+                    'pred_indv_id': indvPhoto.id if match_labels[idx] == True else None} for idx, face in enumerate(group_faces)]
+                print(face_mapping)
+
+                db.session.bulk_update_mappings(FaceEmbedding, face_mapping)
+                db.session.commit()
+
             print('file uploaded successful.')
             return jsonify({'message': "successful"})
         except Exception as e:

@@ -2,7 +2,7 @@ import os
 import pathlib
 
 from . import db
-from application import photos, util, face_recognition
+from application import photos, util, face_model
 from .models import GroupPhoto, FaceEmbedding
 from asyncio.windows_events import NULL
 
@@ -23,7 +23,7 @@ def upload():
 @login_required
 def cluster_faces():
     # start clustering
-    res_cluster = face_recognition.clustering_group_photos(current_user.id)
+    res_cluster = face_model.clustering_group_photos(current_user.id)
     if res_cluster==1:
         # return error message
         return jsonify({"error": "Clustering failed."})
