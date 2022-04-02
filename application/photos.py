@@ -55,7 +55,7 @@ def save_GroupPhotos(file_paths, admin_id):
 def get_grp_photo(grp_photo_id):
     try:
         grp_photo = GroupPhoto.query.filter_by(id=grp_photo_id).first()
-        print("type of grp_photo - ",grp_photo)
+        print("group photo - ", grp_photo.id)
         return grp_photo
     except Exception as e:
         print(e)
@@ -69,3 +69,16 @@ def get_all_grp_photos(admin_id):
     except Exception as e:
         print(e)
         return 1
+
+###########################################################################
+# Get all group photos base on selected person
+#
+###########################################################################
+def get_grp_photo_by_indvId(indv_id_list):
+    try:
+        grp_photo = GroupPhoto.query.filter(GroupPhoto.face_embeddings.any(FaceEmbedding.pred_indv_id.in_(indv_id_list))).all()
+        print("there are {0} photos".format(len(grp_photo)))
+        return grp_photo
+    except Exception as e:
+        print(e)
+        return None

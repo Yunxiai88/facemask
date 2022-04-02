@@ -4,7 +4,7 @@ from .models import User, Role
 from datetime import datetime
 from application import util
 
-from flask import Blueprint, redirect, render_template, url_for, flash, request
+from flask import Blueprint, redirect, render_template, url_for, flash, request, session
 from flask_login import login_user, login_required, logout_user, current_user
 
 auth = Blueprint('auth', __name__)
@@ -80,6 +80,11 @@ def signup_post():
 @login_required
 def logout():
     logout_user()
+
+    # clear session
+    if session.get('processed_ids'):
+        session.pop('processed_ids')
+
     return redirect(url_for('auth.login'))
 
 @login_manager.user_loader

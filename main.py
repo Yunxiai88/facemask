@@ -10,19 +10,17 @@ from io import BytesIO
 from zipfile import ZipFile
 
 from flask_login import login_required, current_user
-from flask import Blueprint, Flask
-from flask import redirect, url_for, render_template, request, send_file
+from flask import Blueprint, Flask, current_app
+from flask import redirect, url_for, render_template, request, send_file, send_from_directory
 
-from application import db, create_app, util
+from application import db, create_app, util, face_model
 
-images = []
-
+path = pathlib.Path(__file__)
 main = Blueprint('main', __name__)
 
 #---------------------------------------------------------------------
 #----------------------------Functions--------------------------------
 #---------------------------------------------------------------------
-
 @main.route("/error")
 def error():
     return render_template("error.html")
@@ -34,7 +32,7 @@ def index():
     if current_user.uploaded_indv_photos:
 
         face_list = [face.id for face in current_user.uploaded_indv_photos]
-        print(face_list)
+        print("individual photo ids: ", face_list)
 
         # return to index template
         return render_template("index.html", data=face_list)
@@ -44,34 +42,28 @@ def index():
 
 @main.route("/process", methods=['POST'])
 def process():
-    images = []
+    indv_ids = []
 
-    faceImages = request.form.get('faceImages')
-    if faceImages and len(faceImages) > 0:
-        images = faceImages.split(',')
+    indv_photos = request.form.get('faceImages')
+    if indv_photos and len(indv_photos) > 0:
+        indv_ids = indv_photos.split(',')
+        print("individual person id --> ", indv_ids)
 
-    print("face image --> ", images)
+        # apply face image to mask group images
+        group_photos = face_model.mark_face(indv_ids)
 
-    #TODO -- apply face image to mask group images
+    return render_template("process.html", data=group_photos)
 
-    return render_template("process.html", data=images)
-
-#NO USE
-@main.route("/mask", methods=['POST'])
-def selected():
-    images = []
-
-    processedImages = request.form.get('processedImages')
-    if processedImages and len(processedImages) > 0:
-        images = processedImages.split(',')
-    
-    print("mask --> ", images)
-
-    return render_template("process.html", data=images)
+@main.route("/query/<path:photoName>")
+def processed_photo(photoName):
+    processed_path = os.path.join(current_app.config['PROCESSED_FOLDER'], current_user.email)
+    file_path = os.path.join(path.parent, processed_path)
+    return send_from_directory(file_path, photoName)
 
 @main.route("/download", methods=['POST'])
 def download():
     images = []
+    processed_path = os.path.join(current_app.config['PROCESSED_FOLDER'], current_user.email)
 
     selectedImages = request.form.get('selectedImages')
     images = selectedImages.split(',')
@@ -81,7 +73,8 @@ def download():
     stream = BytesIO()
     with ZipFile(stream, 'w') as zf:
         for f in images:
-            file = os.path.join('application/static/processed/', f)
+
+            file = os.path.join(processed_path, f)
             print('  add: ', os.path.basename(file))
             zf.write(file, os.path.basename(file))
     stream.seek(0)

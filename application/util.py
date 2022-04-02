@@ -1,6 +1,7 @@
 import os
 import csv
 import json
+import uuid
 from flask import current_app
 from flask_login import current_user
 from application import db, create_app, util
@@ -56,21 +57,11 @@ def save_file(fpath, file):
     if not os.path.exists(fpath):
         os.makedirs(fpath)
 
-    if allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(fpath, filename))
-        return 0
-    return 1
-
-# save processed file
-def save_processed_file(file):
-    processed_path = os.path.join(current_app.config['PROCESSED_FOLDER'], current_user.email)
-
     file.stream.seek(0)
 
     if allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        file.save(os.path.join(processed_path, filename))
+        file.save(os.path.join(fpath, filename))
         return 0
     return 1
 
@@ -123,3 +114,14 @@ def get_file_name_from_path(file_path):
     file_name = file_path.split('\\')[-1]
     file_path = file_path.replace(file_name, '')
     return file_name, file_path
+
+def get_unique_name():
+    return "{0}.{1}".format(uuid.uuid4(), 'png')
+
+def convert_embedding(embedding):
+    embedding = [float(j) for j in embedding[1:-1].split()]
+    return embedding
+
+def convert_bbox(face_bbox):
+    face_bbox = [int(j) for j in face_bbox[1:-1].split(', ')]
+    return face_bbox

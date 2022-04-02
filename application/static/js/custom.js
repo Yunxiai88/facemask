@@ -140,20 +140,26 @@ $(document).ready(function () {
 
   $('#downloadBtn').click(() => {
     var value = []
-    $('li.download').each(function() {
-      var imname = $(this).find('img').attr("name");
-      value.push(imname)
-    });
 
-    var doc = document.getElementById("downloadForm");
-    // form a input element
-    var input = document.createElement('input')
-    input.type = 'hidden'
-    input.name = 'selectedImages'
-    input.value = value
-    doc.appendChild(input)
+    if ($('li.selected').length > 0) {
+      $('li.selected').each(function() {
+        var imname = $(this).find('img').attr("name");
+        value.push(imname)
+      });
 
-    doc.submit();
+      var doc = document.getElementById("downloadForm");
+      // form a input element
+      var input = document.createElement('input')
+      input.type = 'hidden'
+      input.name = 'selectedImages'
+      input.value = value
+      doc.appendChild(input)
+
+      doc.submit();
+    } else {
+      alert("Please select at least one image to download.");
+      return false
+    }
   });
 
 });

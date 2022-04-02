@@ -38,8 +38,11 @@ def profile_page():
 def query_face(indvId):
     indvPhoto = IndividualPhoto.query.get(indvId)
 
-    file_name, file_path = util.get_file_name_from_path(indvPhoto.file_path)
-    file_path = os.path.join(path.parent.parent, file_path)
+    upload_path = os.path.join(current_app.config['UPLOAD_FOLDER_INDV'], current_user.email)
+    file_path = os.path.join(path.parent.parent, upload_path)
+
+    # get file name
+    file_name, _ = util.get_file_name_from_path(indvPhoto.file_path)
 
     return send_from_directory(file_path, file_name)
 
@@ -112,15 +115,12 @@ def upload_face():
 
             #step1: get face embending
             data = face_model.get_embedding(file)
-            # print("embedding info: " + str(data))
-
-            #data = json.loads(data_str)
-
             if data["code"] != "0":
                 return jsonify({"error": data["message"]})
 
             #step2: save file to disk
-            result = util.save_processed_file(file)
+            upload_path = os.path.join(current_app.config['UPLOAD_FOLDER_INDV'], current_user.email)
+            result = util.save_file(upload_path, file)
             if result == 1:
                 print("file saved failed.")
                 return jsonify({"error": "file uploaded failed."})
@@ -147,8 +147,8 @@ def upload_face():
             #step4: match in group face embending
             group_faces = face_embeddings.get_group_faceEmbeddings_by_indvId()
             if group_faces:
-                known_face_encodings = [face_embeddings.convert_embedding(f.embedding) for f in group_faces]
-                face_encoding_to_check = face_embeddings.convert_embedding(data["embedding"])
+                known_face_encodings = [f.embedding for f in group_faces]
+                face_encoding_to_check = util.convert_embedding(data["embedding"])[0]
 
                 match_labels = face_model.is_face_matching(known_face_encodings, face_encoding_to_check)
                 print("match labels: ", match_labels)
