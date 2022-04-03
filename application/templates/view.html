@@ -10,16 +10,22 @@
 
 <div class="container-fluid text-center">
     <form id="deleteForm" action="/admin/delete" method="POST">
-        <div class="row img-grid">
-            {% for im in data %} 
-                <div class="col-sm-3">
-                    <li class="delete">
-                        <img class="view-img" name="{{im}}" src="{{url_for('admin.query_file', photoId='')}}{{im}}" class="img-circle img-thumbnail" style="width:100%" alt="Image">
-                    </li>
-                </div>
+
+        <div class="row view-img-grid">
+            {% for im in data %}
+            <div class="col-sm-2">
+                <li class="delete">
+                    <img class="view-img" name="{{im}}" src="{{url_for('admin.query_file', photoId='')}}{{im}}">
+                </li>
+            </div>
+
+            {% if loop.index%6 == 0 %}
+            </div>
+            <div class="row view-img-grid">
+            {% endif %}
             {% endfor %}
         </div>
-        <br/>
+
         <div class="col-12 text-center">
             <button id="deleteBtn" name="deleteBtn" class="btn btn-primary" >Delete</button>
         </div>

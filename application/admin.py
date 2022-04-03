@@ -22,13 +22,16 @@ def upload():
 @admin.route('/cluster', methods=['GET'])
 @login_required
 def cluster_faces():
-    # start clustering
-    res_cluster = face_model.clustering_group_photos(current_user.id)
-    if res_cluster==1:
-        # return error message
-        return jsonify({"error": "Clustering failed."})
+    if current_user.has_role('admin'):
+        # start clustering
+        res_cluster = face_model.clustering_group_photos(current_user.id)
+        if res_cluster==1:
+            # return error message
+            return jsonify({"error": "Clustering failed."})
 
-    return jsonify({'message': "successful"})
+        return jsonify({'message': "successful"})
+    else:
+        return jsonify({"error": "You dont have right to execute this function."})
 
 @admin.route('/upload', methods = ['POST'])
 @login_required

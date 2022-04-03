@@ -27,9 +27,9 @@
 }
 
 .view-img {
-  height:240px !important; 
-  max-height: 300px; 
-  max-width:300px; 
+  height:140px !important; 
+  max-height: 200px; 
+  max-width:200px; 
   width: auto !important;
 }
 
@@ -140,8 +140,9 @@ textarea {
 }
 
 /* img selection */
-.img-grid div {
+.view-img-grid div {
   list-style: none;
+  height: 150px;
 }
 
 li:before {
