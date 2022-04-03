@@ -3,7 +3,7 @@ import json
 
 from . import db
 from sqlalchemy import delete
-from application import face_model
+from application import face_model, face_embeddings
 from .models import FaceEmbedding, IndividualPhoto, GroupPhoto
 
 # def save_faceEmbedding(embedding, bbox, group_photo_id=None, indv_photo_id=None):
@@ -19,7 +19,7 @@ def save_IndividualPhoto(name, file_path, user_id, embedding, face_bbox):
 
         print("Temp Individual ID = ", individualPhoto.id)
 
-        # db.session.commit()
+        db.session.flush()
         return individualPhoto
     except Exception as e:
         print(e)
@@ -36,7 +36,7 @@ def get_all_indv_photos(user_id):
 def delete_indv_photos(indv_id):
     try:
         IndividualPhoto.query.filter_by(id == indv_id).delete()
-        #db.session.commit()
+        db.session.flush()
         return 0
     except Exception as e:
         print(e)
@@ -77,6 +77,19 @@ def get_all_grp_photos(admin_id):
         grp_photo = GroupPhoto.query.filter_by(admin_id=admin_id).all()
         print("there are {0} photos".format(len(grp_photo)))
         return grp_photo
+    except Exception as e:
+        print(e)
+        return 1
+
+def delete_grp_photo(grp_photo_ids):
+    try:
+        embeddings = face_embeddings.get_faceEmbeddings(grp_photo_ids)
+        for fe in embeddings:
+            FaceEmbedding.query.filter_by(id=fe.id).delete()
+
+        GroupPhoto.query.filter(GroupPhoto.id.in_(grp_photo_ids)).delete()
+        db.session.flush()
+        return 0
     except Exception as e:
         print(e)
         return 1
