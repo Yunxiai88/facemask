@@ -2,6 +2,8 @@ import os
 import csv
 import json
 import uuid
+import numpy as np
+
 from flask import current_app
 from flask_login import current_user
 from application import db, create_app, util
@@ -66,12 +68,10 @@ def save_file(fpath, file):
     return 1
 
 # delete processed file
-def delete_processed_file(filename):
-    processed_path = os.path.join(current_app.config['PROCESSED_FOLDER'], current_user.email)
-
-    delete_file = os.path.join(processed_path, filename)
-
+def delete_file(filepath, filename):
     try:
+        delete_file = os.path.join(filepath, filename)
+
         if os.path.isfile(delete_file):
 
             os.unlink(delete_file)
@@ -120,7 +120,7 @@ def get_unique_name():
 
 def convert_embedding(embedding):
     embedding = [float(j) for j in embedding[1:-1].split()]
-    return embedding
+    return np.array(embedding)
 
 def convert_bbox(face_bbox):
     face_bbox = [int(j) for j in face_bbox[1:-1].split(', ')]

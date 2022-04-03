@@ -17,37 +17,20 @@ $(document).ready(function () {
   });
 
   $('#faceFile').fileinput({
-      uploadUrl: '/profile/upload',
       theme : 'fas',
       uploadAsync: false,
       maxFileCount: 1,
       minFileCount: 1,
-      showCaption: false,
+      showCaption: true,
       showUpload: false,
-      showUpload: true,
+      showUpload: false,
       showCancel: false,
+      showRemove: true,
       allowedFileExtensions: ['jpg', 'png'],
-      uploadExtraData: function(previewId, index) {
-        return {
-          "username": $("#username").val()
-        }
-      },
       browseClass: "btn btn-primary ",
       dropZoneEnabled: true,
       dropZoneTitle: 'Drag file here！',
-  }).on('filebatchpreupload', function(event, data) {
-    var username = $("#username").val();
-    if(!username) {
-        return {
-          message: "Upload aborted, Please Enter Name!", 
-          data:{}
-      };
-    }
-  }).on('filebatchuploadsuccess', function(event, data, previewId, index) {
-    $("#username").val("")
-  }).on('filebatchuploaderror', function(event, data, msg) {
-    console.log('File Upload Error', 'message: ' + data.response.error);
-  });
+  })
 
   // Face Photo upload button
   $(".btn-upload-face").on("click", function() {
@@ -57,7 +40,9 @@ $(document).ready(function () {
         return;
     }
 
-    $("#faceFile").fileinput('upload');
+    //$("#faceFile").fileinput('upload');
+    var doc = document.getElementById("faceForm");
+    doc.submit();
   });
 
   // Face Photo clear button

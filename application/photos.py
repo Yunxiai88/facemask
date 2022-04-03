@@ -1,6 +1,8 @@
-import json
-from . import db
 import os
+import json
+
+from . import db
+from sqlalchemy import delete
 from application import face_model
 from .models import FaceEmbedding, IndividualPhoto, GroupPhoto
 
@@ -17,7 +19,7 @@ def save_IndividualPhoto(name, file_path, user_id, embedding, face_bbox):
 
         print("Temp Individual ID = ", individualPhoto.id)
 
-        db.session.commit()
+        # db.session.commit()
         return individualPhoto
     except Exception as e:
         print(e)
@@ -27,6 +29,15 @@ def get_all_indv_photos(user_id):
     try:
         indv_photos = IndividualPhoto.query.filter(user_id=user_id)
         return indv_photos
+    except Exception as e:
+        print(e)
+        return 1
+
+def delete_indv_photos(indv_id):
+    try:
+        IndividualPhoto.query.filter_by(id == indv_id).delete()
+        #db.session.commit()
+        return 0
     except Exception as e:
         print(e)
         return 1

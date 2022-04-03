@@ -21,9 +21,6 @@ def get_faceEmbeddings(grp_photo_ids):
 # Get group face embeddings by selected person
 #
 ###########################################################################
-def get_group_faceEmbeddings_by_indvId(pred_indv_id = None):
+def get_group_embeddings_by_indvId(pred_indv_id = None):
     face_embeddings = FaceEmbedding.query.filter(FaceEmbedding.pred_indv_id == pred_indv_id).all()
-    for i in face_embeddings:
-        i.embedding = [float(j) for j in i.embedding[1:-1].split()]
-        i.face_bbox = [int(j) for j in i.face_bbox[1:-1].split(', ')]
     return face_embeddings

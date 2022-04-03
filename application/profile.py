@@ -86,7 +86,7 @@ def delete_face(indvId):
 
         #step4: remove file from disk
         file_name, file_path = util.get_file_name_from_path(indvPhoto.file_path)
-        result_code = util.delete_processed_file(file_name)
+        result_code = util.delete_file(file_path, file_name)
         if result_code == 1:
             print("delete file failed.")
         else:
@@ -122,48 +122,54 @@ def upload_face():
             upload_path = os.path.join(current_app.config['UPLOAD_FOLDER_INDV'], current_user.email)
             result = util.save_file(upload_path, file)
             if result == 1:
-                print("file saved failed.")
-                return jsonify({"error": "file uploaded failed."})
+                raise Exception("file saved failed.")
             
             #step3: save to db
             indvPhoto = photos.save_IndividualPhoto(
                                     name      = username, 
-                                    file_path = os.path.join(current_app.config['PROCESSED_FOLDER'], current_user.email, file.filename),
+                                    file_path = os.path.join(upload_path, file.filename),
                                     # file_name = file.filename,
                                     user_id   = current_user.id,
                                     embedding = data["embedding"],
                                     face_bbox = data["bbox"])
             if indvPhoto is None:
-                print("save info to database failed.")
-
-                # delete uploaded file
-                result = util.delete_processed_file(file.filename)
-                if result == 1:
-                    print("delete file failed.")
-
-                # return error message
-                return jsonify({"error": "file uploaded failed."})
+                raise Exception("save individual info to database failed.")
             
             #step4: match in group face embending
-            group_faces = face_embeddings.get_group_faceEmbeddings_by_indvId()
-            if group_faces:
-                known_face_encodings = [f.embedding for f in group_faces]
-                face_encoding_to_check = util.convert_embedding(data["embedding"])[0]
+            try:
+                group_faces = face_embeddings.get_group_embeddings_by_indvId()
+                if group_faces:
+                    known_face_encodings = [util.convert_embedding(f.embedding) for f in group_faces]
+                    face_encoding_to_check = util.convert_embedding(data["embedding"])
 
-                match_labels = face_model.is_face_matching(known_face_encodings, face_encoding_to_check)
-                print("match labels: ", match_labels)
+                    match_labels = face_model.is_face_matching(known_face_encodings, face_encoding_to_check)
+                    print("match labels: ", match_labels)
 
-                face_mapping = [{
-                    'id':face.id, 
-                    'pred_indv_id': indvPhoto.id if match_labels[idx] == True else None} for idx, face in enumerate(group_faces)]
-                print(face_mapping)
+                    face_mapping = [{
+                        'id':face.id, 
+                        'pred_indv_id': indvPhoto.id if match_labels[idx] == True else None} for idx, face in enumerate(group_faces)]
+                    print(face_mapping)
 
-                db.session.bulk_update_mappings(FaceEmbedding, face_mapping)
-                db.session.commit()
+                    db.session.bulk_update_mappings(FaceEmbedding, face_mapping)
+                    
+                    # save all transactions
+                    db.session.commit()
 
-            print('file uploaded successful.')
-            return jsonify({'message': "successful"})
+                print("file uploaded successful.")
+                return redirect(url_for("profile.walk_face"))
+            except Exception as ie:
+                print(ie)
+
+                error_message = "match individual photo with group photos failed."
+                raise Exception(error_message)
         except Exception as e:
             print("System Error: ", e)
+
+            # rollback -- delete saved individual file
+            file_path = os.path.join(current_app.config['UPLOAD_FOLDER_INDV'], current_user.email)
+            result = util.delete_file(file_path, file.filename)
+            if result == 1:
+                print("delete file failed.")
+
             return jsonify({"error": "System Error. Please contact administrator."})
 
