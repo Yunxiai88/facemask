@@ -14,7 +14,11 @@ $(document).ready(function () {
     browseClass: "btn btn-primary ",
     dropZoneEnabled: true,
     dropZoneTitle: 'Drag file here！',
-  });
+  }).on('filebatchuploadsuccess', function(event, data, previewId, index) {
+    window.location.href="/admin/view";
+  }).on('filebatchuploaderror', function(event, data, msg) {
+    console.log('File Upload Error', 'message: ' + data.response.error);
+  });;
 
   $('#faceFile').fileinput({
       theme : 'fas',

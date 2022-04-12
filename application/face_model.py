@@ -75,20 +75,21 @@ def clustering_group_photos(admin_id):
     # get all photos uploaded by the admin
     all_grp_photos = photos.get_all_grp_photos(admin_id)
     # get all face_embedding data of the queried photos
-    [all_embeddings, emb_ids, grp_ids, img_pths, bboxes] = map(list,zip(*[([float(j) for j in embed.embedding[1:-1].split()], embed.id, i.id, i.file_path, [int(k) for k in embed.face_bbox[1:-1].split(', ')]) for i in all_grp_photos for embed in i.face_embeddings]))
+    [all_embeddings, emb_ids, pred_ids, grp_ids, img_pths, bboxes] = map(list,zip(*[(util.convert_embedding(embed.embedding), embed.id, embed.pred_indv_id, i.id, i.file_path, [int(k) for k in embed.face_bbox[1:-1].split(', ')]) for i in all_grp_photos for embed in i.face_embeddings]))
     # print(all_embeddings, emb_ids, grp_ids, img_pths, bboxes)
     print("type of all_embeddings: {0}, len is {1}".format(type(all_embeddings), len(all_embeddings)))
     
     try:
         # cluster embeddings
-        clt = DBSCAN(metric="euclidean")
+        clt = DBSCAN(eps=0.55, metric="euclidean")
         clt.fit(all_embeddings)
 
         # determine the total number of unique faces found in the dataset
         all_labels = clt.labels_
-        # clusterIDs = np.unique(all_labels)
-        # print('all labels: ', all_labels)
-        # print('unique ids: ', clusterIDs)
+        clusterIDs = np.unique(all_labels)
+        print('all labels: ', all_labels)
+        print('unique ids: ', clusterIDs)
+        print('predic ids: ', pred_ids)
 
         no_face_index = []
         # check if unknown label has a face
@@ -105,11 +106,28 @@ def clustering_group_photos(admin_id):
             # if not a face, delete it
             if not face:
                 no_face_index.append(f)
-                # all_labels = np.delete(all_labels, f)
-                # del all_embeddings[f]
-                # del emb_ids[f]
-                # del grp_ids[f]
         print("no face index: ", no_face_index)
+
+        #all individual faces
+        individuals = photos.get_all_indv_photos(current_user.id)
+
+        #mach with existing face
+        unique_faces = len(np.where(all_labels > -1)[0])
+        print('number of faces found: ', unique_faces)
+        for labelID in clusterIDs:
+            idxs = np.where(clt.labels_ == labelID)[0]
+            print(idxs)
+
+            #set value
+            pred_val = [pred_ids[i] for i in idxs if pred_ids[i]]
+            if pred_val:
+                for j in idxs:
+                    pred_ids[j] = pred_val[0]
+                print(pred_ids)
+            else:
+                #individual faces
+                match_labels = is_face_matching([util.convert_embedding(ind.embedding) for ind in individuals], all_embeddings[idxs[0]])
+                print(match_labels)
 
         all_labels = util.delete_list_by_index(all_labels, no_face_index)
         emb_ids = util.delete_list_by_index(emb_ids, no_face_index)
@@ -117,8 +135,8 @@ def clustering_group_photos(admin_id):
         # print('unique ids: ', np.unique(all_labels))
         print("grp_ids --- ", grp_ids)
         # Add clustering results in DB
-        res = clustering.add_clustering_results(emb_ids, grp_ids, all_labels)
-
+        #res = clustering.add_clustering_results(emb_ids, grp_ids, all_labels)
+        res = 1
         if res == 1:
             print("Saving clustering results to DB failed.")
 

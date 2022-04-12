@@ -36,49 +36,62 @@ def cluster_faces():
 @admin.route('/upload', methods = ['POST'])
 @login_required
 def upload_post():
-    if request.method == "POST":
-        isOk = True
-        filepaths = []
+    filepaths = []
+    save_path = current_app.config['UPLOAD_FOLDER_GRP']
 
-        save_path = current_app.config['UPLOAD_FOLDER_GRP']
+    try:
+        #step1: check role
+        if not current_user.has_role('admin'):
+            raise Exception("You dont have right to execute this function.")
 
+        #step2: save to disk
         files = request.files.getlist("files")
         for file in files:
             result = util.save_file(save_path, file)
             if result == 1:
-                isOk = False
-                break
+                raise Exception("save file for: {0} failed.".format(file.filename))
             filepaths.append(os.path.join(save_path, file.filename))
+        print("save file to disk successful.")
 
-        if isOk:
-            # save to DB
-            res_data = photos.save_GroupPhotos(filepaths, current_user.id)
-            if res_data == 1:
-                print("save info to database failed.")
-                
-                # delete uploaded file
-                res_data = util.delete_group_files(filepaths)
-                if res_data == 1:
-                    print("delete files failed.")
-
-                # return error message
-                return jsonify({"error": "file uploaded failed."})
-            
-            print('file uploaded successful.')
-
+        #step3: save to DB
+        res_data = photos.save_GroupPhotos(filepaths, current_user.id)
+        if res_data == 1:
+            raise Exception("save info to database failed.")
         else:
-            print('file uploaded failed.')
-            return jsonify({"error": "file uploaded failed."})
+            print("save info to database successful.")
+
+        #step4: trigger cluster
+        res_cluster = face_model.clustering_group_photos(current_user.id)
+        if res_cluster == 1:
+            raise Exception("Clustering failed.")
+        else:
+            print("Clustering successful.")
         
-        return jsonify({'message': "successful"})
+        db.session.commit()
+        print('uploading batch photos successful.')
+    except Exception as e:
+        print("System Error: ", e)
+
+        #rollback: delete uploaded file
+        res_data = util.delete_group_files(filepaths)
+        if res_data == 1:
+            print("delete files failed.")
+        
+        #rollback: delete
+        
+        # return error message
+        return jsonify({"error": "file uploaded failed."})
+    
+    return jsonify({'message': "successful"})
 
 @admin.route("/delete", methods=['POST'])
 @login_required
 def delete():
-    try:
-        grp_photos = []
+    grp_photos = []
 
+    try:
         delete_images = request.form.get('deleteImages')
+
         if delete_images and len(delete_images) > 0:
             grp_photo_ids = delete_images.split(',')
             print("deleting group photos {0}".format(grp_photo_ids))

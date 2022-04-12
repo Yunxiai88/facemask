@@ -28,14 +28,14 @@ def add_clustering_results(emb_ids, grp_photo_ids, clt_labels):
       print(cluster_id)
       for i in idxs:
         each_face_data = {
-          'cluster_no': cluster_id,
+          'cluster_no': int(cluster_id),
           'clustering_log_id': clustering_log.id,
           'face_embedding_id': emb_ids[i],
           'pred_indv_id': None
         }
         face_data.append(each_face_data)
     db.session.bulk_insert_mappings(Cluster, face_data)
-    db.session.commit()
+    # db.session.commit()
     return 0
   
   except Exception as e:
