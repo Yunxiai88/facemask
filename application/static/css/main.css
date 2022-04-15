@@ -33,6 +33,12 @@
   width: auto !important;
 }
 
+.bottom-fixed {
+  position: fixed;
+  right: 50px;
+  bottom: 50px;
+} 
+
 /* common section*/
 textarea {
   width: 100%;

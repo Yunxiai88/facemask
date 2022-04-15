@@ -28,6 +28,7 @@ def get_group_embeddings_by_indvId(pred_indv_id = None):
 def update_face_embedding(emb_ids, pred_indv_ids):
     try:
         pred_id_map = dict(zip(emb_ids, pred_indv_ids))
+        print(pred_id_map)
 
         face_emds = FaceEmbedding.query.filter(
             FaceEmbedding.id.in_([x for x in emb_ids]),
@@ -37,6 +38,16 @@ def update_face_embedding(emb_ids, pred_indv_ids):
         for face_emd in face_emds:
            FaceEmbedding.query.filter_by(id=face_emd.id).update({'pred_indv_id': pred_id_map.get(face_emd.id)})
 
+        db.session.flush()
+        return 0
+    except Exception as e:
+        print(e)
+        return 1
+
+def update_pred_indv_id(pred_indv_id, new_pred_indv_id):
+    try:
+        FaceEmbedding.query.filter_by(pred_indv_id = pred_indv_id).update({'pred_indv_id': new_pred_indv_id})
+        db.session.flush()
         return 0
     except Exception as e:
         print(e)

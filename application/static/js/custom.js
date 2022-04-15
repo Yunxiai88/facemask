@@ -100,6 +100,27 @@ $(document).ready(function () {
     }
   });
 
+  $('#matchBtn').click(() => {
+    window.location.href="/";
+    /**
+    var value = []
+    $('img').each(function() {
+      var imname = $(this).attr("name");
+      value.push(imname)
+    });
+
+    var doc = document.getElementById("imageForm");
+    // form a input element
+    var input = document.createElement('input')
+    input.type = 'hidden'
+    input.name = 'faceImages'
+    input.value = value
+    doc.appendChild(input)
+
+    doc.submit();
+     */
+  });
+
   $('#deleteBtn').click(() => {
     if ($('li.selected').length > 0) {
       if(confirm("Are you confirm to delete these photos?")) {

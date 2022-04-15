@@ -31,7 +31,7 @@ def index():
     # check whether face embedding existing in db
     if current_user.uploaded_indv_photos:
 
-        face_list = [face.id for face in current_user.uploaded_indv_photos]
+        face_list = [face.id for face in current_user.uploaded_indv_photos if face.deleted_at is None]
         print("individual photo ids: ", face_list)
 
         # return to index template
@@ -41,6 +41,7 @@ def index():
         return redirect(url_for("profile.walk_face"))
 
 @main.route("/process", methods=['POST'])
+@login_required
 def process():
     indv_ids = []
 
@@ -55,12 +56,14 @@ def process():
     return render_template("process.html", data=group_photos)
 
 @main.route("/query/<path:photoName>")
+@login_required
 def processed_photo(photoName):
     processed_path = os.path.join(current_app.config['PROCESSED_FOLDER'], current_user.email)
     file_path = os.path.join(path.parent, processed_path)
     return send_from_directory(file_path, photoName)
 
 @main.route("/download", methods=['POST'])
+@login_required
 def download():
     images = []
     processed_path = os.path.join(current_app.config['PROCESSED_FOLDER'], current_user.email)

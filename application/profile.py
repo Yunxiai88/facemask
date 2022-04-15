@@ -23,7 +23,7 @@ def walk_face():
     face_list = []
 
     if faces:
-        face_list = [face.id for face in faces]
+        face_list = [face.id for face in faces if face.deleted_at is None]
         print("All faces for current user: ", face_list)
 
     return render_template('profile.html', data=face_list, appends=2-len(face_list))
@@ -32,6 +32,11 @@ def walk_face():
 @login_required
 def profile_page():
     return render_template('face_image.html')
+
+@profile.route('/update/<path:indvId>')
+@login_required
+def update_face(indvId):
+    return render_template('face_image.html', indvId=indvId)
 
 @profile.route('/query/<path:indvId>')
 @login_required
@@ -110,13 +115,25 @@ def delete_face(indvId):
 def upload_face():
     if request.method == "POST":
         try:
+            indvId = request.form['indvId']
             username = request.form['username']
             file = request.files['faceFile']
 
             #step1: get face embending
             data = face_model.get_embedding(file)
             if data["code"] != "0":
-                return jsonify({"error": data["message"]})
+                raise Exception(data["message"])
+
+            #check whehter same embedding with different id exist
+            individuals = photos.get_all_indv_photos()
+            matched_ids = face_model.match_face_embedding (
+                [util.convert_embedding(ind.embedding) for ind in individuals], 
+                util.convert_embedding(data["embedding"]), 
+                individuals
+            )
+
+            if matched_ids and current_user.id != matched_ids[0]:
+                raise Exception("same person used by different account, Please try another one.")
 
             #step2: save file to disk
             upload_path = os.path.join(current_app.config['UPLOAD_FOLDER_INDV'], current_user.email)
@@ -151,17 +168,31 @@ def upload_face():
                     print(face_mapping)
 
                     db.session.bulk_update_mappings(FaceEmbedding, face_mapping)
-                    
-                    # save all transactions
-                    db.session.commit()
-
-                print("file uploaded successful.")
-                return redirect(url_for("profile.walk_face"))
             except Exception as ie:
                 print(ie)
 
                 error_message = "match individual photo with group photos failed."
                 raise Exception(error_message)
+
+            #step5: update individual table witn new id
+            if indvId:
+                res = photos.defunct_indv_photos(indvId)
+                if res == 1:
+                    raise Exception('update individual table failed.')
+
+                # update face_embedding table witn new id
+                res = face_embeddings.update_pred_indv_id(indvId, indvPhoto.id)
+                if res == 1:
+                    raise Exception('update face embedding table failed.')
+
+            # save all transactions
+            db.session.commit()
+
+            print("file uploaded successful.")
+
+            flash("file uploaded successful.")
+
+            return redirect(url_for("profile.walk_face"))
         except Exception as e:
             print("System Error: ", e)
 
@@ -171,5 +202,7 @@ def upload_face():
             if result == 1:
                 print("delete file failed.")
 
-            return jsonify({"error": "System Error. Please contact administrator."})
+            flash("System Error. Please contact administrator.")
+
+            return redirect(url_for("profile.profile_page"))
 

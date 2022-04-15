@@ -2,6 +2,7 @@ import os
 import json
 
 from . import db
+from datetime import datetime
 from sqlalchemy import delete
 from application import face_model, face_embeddings
 from .models import FaceEmbedding, IndividualPhoto, GroupPhoto
@@ -37,7 +38,17 @@ def get_all_indv_photos(user_id=None):
 
 def delete_indv_photos(indv_id):
     try:
-        IndividualPhoto.query.filter_by(id == indv_id).delete()
+        IndividualPhoto.query.filter_by(id = indv_id).delete()
+        db.session.flush()
+        return 0
+    except Exception as e:
+        print(e)
+        return 1
+
+def defunct_indv_photos(indv_id):
+    try:
+        current_date = datetime.now()
+        IndividualPhoto.query.filter_by(id = indv_id).update({'deleted_at': current_date})
         db.session.flush()
         return 0
     except Exception as e:
@@ -48,12 +59,12 @@ def save_GroupPhotos(file_paths, admin_id):
     try:
         face_data = []
         for file_path in file_paths:
-            print("save group photo for {0}".format(file_path))
+            #print("save group photo for {0}".format(file_path))
             groupPhoto = GroupPhoto(file_path, admin_id, None)
             db.session.add(groupPhoto)
             db.session.flush()
 
-            print("get all faces for {0}".format(file_path))
+            # print("get all faces for {0}".format(file_path))
             boxes, embeddings = face_model.get_all_faces(file_path)
             d = [{'grp_photo_id':groupPhoto.id, 'face_bbox':str(box), 'embedding':str(emb), 'pred_indv_id': None} for (box, emb) in zip(boxes, embeddings)]
             face_data.extend(d)

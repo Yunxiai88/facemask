@@ -87,9 +87,15 @@ def clustering_group_photos(admin_id):
         # determine the total number of unique faces found in the dataset
         all_labels = clt.labels_
         clusterIDs = np.unique(all_labels)
-        # print('all labels: ', all_labels)
-        # print('unique ids: ', clusterIDs)
-        print('predic ids: ', pred_ids)
+        print('all cluster labels: ', all_labels)
+        print('existing embedding ids: ', emb_ids)
+        print('existing individul ids: ', pred_ids)
+
+        unique_faces = np.where(all_labels > -1)[0]
+        print('number of faces found: ', len(unique_faces))
+
+        #all individual faces
+        individuals = photos.get_all_indv_photos()
 
         no_face_index = []
         # check if unknown label has a face
@@ -105,13 +111,14 @@ def clustering_group_photos(admin_id):
             # if not a face, delete it
             if not face:
                 no_face_index.append(f)
+            else:
+                #match with existing faces
+                matched_ids = match_face_embedding([util.convert_embedding(ind.embedding) for ind in individuals], all_embeddings[f], individuals)
+                if matched_ids:
+                    #update individual ids
+                    pred_ids[f] = matched_ids[0]
         print("no face index: ", no_face_index)
-
-        #all individual faces
-        individuals = photos.get_all_indv_photos()
-
-        unique_faces = np.where(all_labels > -1)[0]
-        print('number of faces found: ', len(unique_faces))
+        print('updated individual ids for unknow: ', pred_ids)
 
         #match with existing face
         for labelID in clusterIDs:
@@ -126,22 +133,14 @@ def clustering_group_photos(admin_id):
             if pred_val:
                 for j in idxs:
                     pred_ids[j] = pred_val[0]
-                print('matched existing individual ids for this cluster: ', pred_ids)
             else:
                 #individual faces
-                match_labels = is_face_matching([util.convert_embedding(ind.embedding) for ind in individuals], all_embeddings[idxs[0]])
-                print('matching lables: ', match_labels)
-
-                matched_ids = [indvPhoto.id if match_labels[idx] == True else None for idx, indvPhoto in enumerate(individuals)]
-                print(matched_ids)
+                matched_ids = match_face_embedding([util.convert_embedding(ind.embedding) for ind in individuals], all_embeddings[idxs[0]], individuals)
                 if matched_ids:
-                    matched_id = matched_ids[0]
-                    print('matched id: ', matched_id)
-
                     #update individual ids
                     for k in idxs:
-                        pred_ids[k] = matched_id
-        print('updated individual ids: ', pred_ids)
+                        pred_ids[k] = matched_ids[0]
+        print('updated individual ids for knowing: ', pred_ids)
 
         all_labels = util.delete_list_by_index(all_labels, no_face_index)
         emb_ids = util.delete_list_by_index(emb_ids, no_face_index)
@@ -165,6 +164,18 @@ def clustering_group_photos(admin_id):
         print(e)
 
         return 1
+
+def match_face_embedding(known_face_encodings, face_encoding_to_check, individuals):
+    match_labels = is_face_matching(known_face_encodings, face_encoding_to_check)
+    print('matching lables: ', match_labels)
+
+    matched_ids = [indvPhoto.id if match_labels[idx] == True else None for idx, indvPhoto in enumerate(individuals)]
+    print(matched_ids)
+
+    if matched_ids:
+        matched_id = matched_ids[0]
+        print('matched id: ', matched_id)
+    return matched_ids
 
 ###########################################################################
 # method to check face encoding against a list of know face encodings
@@ -197,6 +208,7 @@ def mark_face(indv_ids):
             return photo_ids
         else:
             indv_ids = need_process_ids
+            session["processed_ids"] = processed_ids.append(need_process_ids)
             print("will process photos for persons:{0}".format(need_process_ids))
     else:
         session["processed_ids"] = indv_ids

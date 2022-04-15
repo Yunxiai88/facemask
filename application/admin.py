@@ -142,6 +142,7 @@ def view():
     return render_template("view.html", data=photo_ids)
 
 @admin.route('/query/<path:photoId>')
+@login_required
 def query_file(photoId):
     photo = photos.get_grp_photo(photoId)
 
