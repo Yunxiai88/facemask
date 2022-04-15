@@ -25,13 +25,12 @@ def save_IndividualPhoto(name, file_path, user_id, embedding, face_bbox):
         print(e)
         return None
 
-def get_all_indv_photos(user_id):
+def get_all_indv_photos(user_id=None):
     try:
-        indv_photos = IndividualPhoto.query.filter(
-            IndividualPhoto.user_id == user_id,
-            IndividualPhoto.deleted_at != None
-        )
-        return indv_photos
+        query = IndividualPhoto.query.filter(IndividualPhoto.deleted_at == None)
+        if user_id:
+            query = query.filter(IndividualPhoto.user_id == user_id)
+        return query.all()
     except Exception as e:
         print(e)
         return 1

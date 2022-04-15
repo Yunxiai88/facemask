@@ -24,3 +24,20 @@ def get_faceEmbeddings(grp_photo_ids):
 def get_group_embeddings_by_indvId(pred_indv_id = None):
     face_embeddings = FaceEmbedding.query.filter(FaceEmbedding.pred_indv_id == pred_indv_id).all()
     return face_embeddings
+
+def update_face_embedding(emb_ids, pred_indv_ids):
+    try:
+        pred_id_map = dict(zip(emb_ids, pred_indv_ids))
+
+        face_emds = FaceEmbedding.query.filter(
+            FaceEmbedding.id.in_([x for x in emb_ids]),
+            FaceEmbedding.pred_indv_id == None
+        )
+
+        for face_emd in face_emds:
+           FaceEmbedding.query.filter_by(id=face_emd.id).update({'pred_indv_id': pred_id_map.get(face_emd.id)})
+
+        return 0
+    except Exception as e:
+        print(e)
+        return 1

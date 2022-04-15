@@ -5,7 +5,7 @@ from .models import ClusteringLog, Cluster
 from flask_login import current_user
 from sqlalchemy.orm import joinedload
 
-def add_clustering_results(emb_ids, grp_photo_ids, clt_labels):
+def add_clustering_results(emb_ids, grp_photo_ids, clt_labels, pred_ids):
   print("grp_photo_ids ----- ", grp_photo_ids)
   try:
     cluster_ids = np.unique(clt_labels)
@@ -31,7 +31,7 @@ def add_clustering_results(emb_ids, grp_photo_ids, clt_labels):
           'cluster_no': int(cluster_id),
           'clustering_log_id': clustering_log.id,
           'face_embedding_id': emb_ids[i],
-          'pred_indv_id': None
+          'pred_indv_id': pred_ids[i]
         }
         face_data.append(each_face_data)
     db.session.bulk_insert_mappings(Cluster, face_data)

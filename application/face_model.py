@@ -8,7 +8,7 @@ from datetime import datetime
 from sklearn.cluster import DBSCAN
 from flask_login import current_user
 
-from application import util, photos, clustering
+from application import util, photos, clustering, face_embeddings
 
 def get_embedding(file_stream):
     # Load the jpg file into a numpy array
@@ -87,8 +87,8 @@ def clustering_group_photos(admin_id):
         # determine the total number of unique faces found in the dataset
         all_labels = clt.labels_
         clusterIDs = np.unique(all_labels)
-        print('all labels: ', all_labels)
-        print('unique ids: ', clusterIDs)
+        # print('all labels: ', all_labels)
+        # print('unique ids: ', clusterIDs)
         print('predic ids: ', pred_ids)
 
         no_face_index = []
@@ -96,7 +96,6 @@ def clustering_group_photos(admin_id):
         unknown_faces = np.where(all_labels == -1)[0]
         for f in unknown_faces:
             grp_image_path = img_pths[f]
-            print(grp_image_path)
             
             grp_image = cv2.imread(grp_image_path)
             [top, right, bottom, left] = bboxes[f]
@@ -109,38 +108,56 @@ def clustering_group_photos(admin_id):
         print("no face index: ", no_face_index)
 
         #all individual faces
-        individuals = photos.get_all_indv_photos(current_user.id)
+        individuals = photos.get_all_indv_photos()
 
-        #mach with existing face
-        unique_faces = len(np.where(all_labels > -1)[0])
-        print('number of faces found: ', unique_faces)
+        unique_faces = np.where(all_labels > -1)[0]
+        print('number of faces found: ', len(unique_faces))
+
+        #match with existing face
         for labelID in clusterIDs:
+            if labelID == -1:
+                continue
+
             idxs = np.where(clt.labels_ == labelID)[0]
-            print(idxs)
+            print('lable: ', labelID, ' -- its indx: ', idxs)
 
             #set value
             pred_val = [pred_ids[i] for i in idxs if pred_ids[i]]
             if pred_val:
                 for j in idxs:
                     pred_ids[j] = pred_val[0]
-                print(pred_ids)
+                print('matched existing individual ids for this cluster: ', pred_ids)
             else:
                 #individual faces
                 match_labels = is_face_matching([util.convert_embedding(ind.embedding) for ind in individuals], all_embeddings[idxs[0]])
-                print(match_labels)
+                print('matching lables: ', match_labels)
+
+                matched_ids = [indvPhoto.id if match_labels[idx] == True else None for idx, indvPhoto in enumerate(individuals)]
+                print(matched_ids)
+                if matched_ids:
+                    matched_id = matched_ids[0]
+                    print('matched id: ', matched_id)
+
+                    #update individual ids
+                    for k in idxs:
+                        pred_ids[k] = matched_id
+        print('updated individual ids: ', pred_ids)
 
         all_labels = util.delete_list_by_index(all_labels, no_face_index)
         emb_ids = util.delete_list_by_index(emb_ids, no_face_index)
         grp_ids = util.delete_list_by_index(grp_ids, no_face_index)
         # print('unique ids: ', np.unique(all_labels))
-        print("grp_ids --- ", grp_ids)
-        # Add clustering results in DB
-        #res = clustering.add_clustering_results(emb_ids, grp_ids, all_labels)
-        res = 1
-        if res == 1:
-            print("Saving clustering results to DB failed.")
+        # print("grp_ids --- ", grp_ids)
 
-            return 1
+        # Add clustering results in DB
+        res = clustering.add_clustering_results(emb_ids, grp_ids, all_labels, pred_ids)
+        if res == 1:
+            raise Exception("Saving clustering results to DB failed.")
+
+        # update individual id back to face_embdding table
+        res = face_embeddings.update_face_embedding(emb_ids, pred_ids)
+        if res == 1:
+            raise Exception("Update back to face embdding failed.")
 
         return 0
 
