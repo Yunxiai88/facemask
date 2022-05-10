@@ -10,6 +10,8 @@ from flask_login import current_user
 
 from application import util, photos, clustering, face_embeddings
 
+SMILE_IMAGE = "application/static/img/smile.png"
+
 def get_embedding(file_stream):
     # Load the jpg file into a numpy array
     image = face_recognition.load_image_file(file_stream)
@@ -215,6 +217,8 @@ def mark_face(indv_ids):
     
     # process filter photos
     if group_photos:
+        smile_image = cv2.imread(SMILE_IMAGE, cv2.IMREAD_UNCHANGED)
+
         for photo in group_photos:
             # file_name = util.get_unique_name()
             file_name = util.get_file_name_from_path(photo.file_path)[0]
@@ -226,8 +230,13 @@ def mark_face(indv_ids):
             for face in embeddings:
                 if str(face.pred_indv_id) not in indv_ids:
                     [top, right, bottom, left] = util.convert_bbox(face.face_bbox)
-                    grp_image[top:bottom, left:right] = cv2.blur(grp_image[top:bottom, left:right], (40, 40))
-            # write photo with mask
+
+                    # option 1: blur faces
+                    #grp_image[top:bottom, left:right] = cv2.blur(grp_image[top:bottom, left:right], (40, 40))
+                    
+                    # option 2: write photo with mask
+                    grp_image = util.get_mask(grp_image, smile_image, top, right, bottom, left)
+
             cv2.imwrite('processed/{0}/{1}'.format(current_user.email, file_name), grp_image)
     else:
         print("no group photo for selected person.")

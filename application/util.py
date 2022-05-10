@@ -1,4 +1,5 @@
 import os
+import cv2
 import csv
 import json
 import uuid
@@ -125,3 +126,17 @@ def convert_embedding(embedding):
 def convert_bbox(face_bbox):
     face_bbox = [int(j) for j in face_bbox[1:-1].split(', ')]
     return face_bbox
+
+def get_mask(original_image, mask_image, top, right, bottom, left):
+    ones = np.ones((original_image.shape[0], original_image.shape[1]))*255
+    alpha_original_image = np.dstack([original_image, ones])
+
+    resized_mask_image = cv2.resize(mask_image, (bottom - top, right - left))
+
+    alpha_mask_image = resized_mask_image[:, :, 3] / 255.0
+    alpha_mask_image_1 = 1 - alpha_mask_image
+
+    for c in range(0, 3): 
+        original_image[top:bottom, left:right, c] = ((alpha_mask_image_1 * alpha_original_image[top:bottom, left:right, c]) + (alpha_mask_image * resized_mask_image[:, :, c]))
+    
+    return original_image
