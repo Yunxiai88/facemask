@@ -8,7 +8,7 @@ from datetime import datetime
 from sklearn.cluster import DBSCAN
 from flask_login import current_user
 
-from application import util, photos, clustering, face_embeddings
+from application import util, photos, clustering, face_embeddings, face_model
 
 SMILE_IMAGE = "application/static/img/smile.png"
 
@@ -38,7 +38,7 @@ def get_embedding(file_stream):
         face_encodings = face_recognition.face_encodings(image, face_locations)
 
         print("face location = ", face_locations[0])
-        print("face encoding = ", face_encodings[0])
+        #print("face encoding = ", face_encodings[0])
 
         return {
             "code" : "0", 
@@ -79,7 +79,7 @@ def clustering_group_photos(admin_id):
     # get all face_embedding data of the queried photos
     [all_embeddings, emb_ids, pred_ids, grp_ids, img_pths, bboxes] = map(list,zip(*[(util.convert_embedding(embed.embedding), embed.id, embed.pred_indv_id, i.id, i.file_path, [int(k) for k in embed.face_bbox[1:-1].split(', ')]) for i in all_grp_photos for embed in i.face_embeddings]))
     # print(all_embeddings, emb_ids, grp_ids, img_pths, bboxes)
-    print("type of all_embeddings: {0}, len is {1}".format(type(all_embeddings), len(all_embeddings)))
+    # print("type of all_embeddings: {0}, len is {1}".format(type(all_embeddings), len(all_embeddings)))
     
     try:
         # cluster embeddings
@@ -115,13 +115,13 @@ def clustering_group_photos(admin_id):
                 no_face_index.append(f)
             else:
                 #match with existing faces
-                matched_ids = match_face_embedding([util.convert_embedding(ind.embedding) for ind in individuals], all_embeddings[f], individuals)
-                if matched_ids:
-                    #update individual ids
-                    pred_ids[f] = matched_ids[0]
+                matched_id = match_face_embedding([util.convert_embedding(ind.embedding) for ind in individuals], all_embeddings[f], individuals)
+                if matched_id:
+                    pred_ids[f] = matched_id
         print("no face index: ", no_face_index)
         print('updated individual ids for unknow: ', pred_ids)
 
+        matchingExist = False
         #match with existing face
         for labelID in clusterIDs:
             if labelID == -1:
@@ -137,18 +137,20 @@ def clustering_group_photos(admin_id):
                     pred_ids[j] = pred_val[0]
             else:
                 #individual faces
-                matched_ids = match_face_embedding([util.convert_embedding(ind.embedding) for ind in individuals], all_embeddings[idxs[0]], individuals)
-                if matched_ids:
-                    #update individual ids
+                matched_id = match_face_embedding([util.convert_embedding(ind.embedding) for ind in individuals], all_embeddings[idxs[0]], individuals)
+                if matched_id:
                     for k in idxs:
-                        pred_ids[k] = matched_ids[0]
-        print('updated individual ids for knowing: ', pred_ids)
+                        pred_ids[k] = matched_id
+            matchingExist = True
+        
+        if matchingExist == True:
+            print('updated individual ids for knowing: ', pred_ids)
 
-        all_labels = util.delete_list_by_index(all_labels, no_face_index)
         emb_ids = util.delete_list_by_index(emb_ids, no_face_index)
         grp_ids = util.delete_list_by_index(grp_ids, no_face_index)
+        pred_ids = util.delete_list_by_index(pred_ids, no_face_index)
+        all_labels = util.delete_list_by_index(all_labels, no_face_index)
         # print('unique ids: ', np.unique(all_labels))
-        # print("grp_ids --- ", grp_ids)
 
         # Add clustering results in DB
         res = clustering.add_clustering_results(emb_ids, grp_ids, all_labels, pred_ids)
@@ -169,22 +171,19 @@ def clustering_group_photos(admin_id):
 
 def match_face_embedding(known_face_encodings, face_encoding_to_check, individuals):
     match_labels = is_face_matching(known_face_encodings, face_encoding_to_check)
-    print('matching lables: ', match_labels)
-
-    matched_ids = [indvPhoto.id if match_labels[idx] == True else None for idx, indvPhoto in enumerate(individuals)]
-    print(matched_ids)
-
+    matched_ids = [indvPhoto.id for idx, indvPhoto in enumerate(individuals) if match_labels[idx] == True]
+    
     if matched_ids:
-        matched_id = matched_ids[0]
-        print('matched id: ', matched_id)
-    return matched_ids
+        print('matched id: ', matched_ids[0])
+        return matched_ids[0]
+    else:
+        return None
 
 ###########################################################################
 # method to check face encoding against a list of know face encodings
 #
 ###########################################################################
 def is_face_matching(known_face_encodings, face_encoding_to_check, tolerance=0.6):
-    print("matching individual face with group photo")
     match_label = face_recognition.compare_faces(known_face_encodings, face_encoding_to_check, tolerance)
     return match_label
 
@@ -197,6 +196,15 @@ def mark_face(indv_ids):
     need_process_ids = []
 
     # get all photos should be returned
+    test = face_embeddings.get_group_embeddings_by_indvId()
+    known_face_encodings = [util.convert_embedding(f.embedding) for f in test]
+
+    ind = photos.get_indv_photo_by_id(indv_ids[0])
+
+    match_labels = face_model.is_face_matching(known_face_encodings, util.convert_embedding(ind.embedding))
+    print("match labels: ", match_labels)
+
+
     group_photos = photos.get_grp_photo_by_indvId(indv_ids)
     photo_ids = [util.get_file_name_from_path(photo.file_path)[0] for photo in group_photos]
 

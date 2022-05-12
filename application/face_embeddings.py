@@ -2,7 +2,7 @@ import os
 import json
 from . import db
 import numpy as np
-from application import face_model
+from application import face_model, util
 from .models import FaceEmbedding, IndividualPhoto, GroupPhoto
 
 def get_faceEmbeddings(grp_photo_ids):
@@ -28,7 +28,7 @@ def get_group_embeddings_by_indvId(pred_indv_id = None):
 def update_face_embedding(emb_ids, pred_indv_ids):
     try:
         pred_id_map = dict(zip(emb_ids, pred_indv_ids))
-        print(pred_id_map)
+        print('updating face embedding: ', pred_id_map)
 
         face_emds = FaceEmbedding.query.filter(
             FaceEmbedding.id.in_([x for x in emb_ids]),
@@ -48,6 +48,29 @@ def update_pred_indv_id(pred_indv_id, new_pred_indv_id):
     try:
         FaceEmbedding.query.filter_by(pred_indv_id = pred_indv_id).update({'pred_indv_id': new_pred_indv_id})
         db.session.flush()
+        return 0
+    except Exception as e:
+        print(e)
+        return 1
+
+def update_faceembedding_with_matched_embedding(indvPhoto, embedding):
+    try:
+        group_faces = get_group_embeddings_by_indvId()
+        if group_faces:
+            known_face_encodings = [util.convert_embedding(f.embedding) for f in group_faces]
+            face_encoding_to_check = util.convert_embedding(embedding)
+
+            match_labels = face_model.is_face_matching(known_face_encodings, face_encoding_to_check)
+            print("match labels: ", match_labels)
+
+            face_mapping = [{
+                'id':face.id, 
+                'pred_indv_id': indvPhoto.id if match_labels[idx] == True else None} for idx, face in enumerate(group_faces)]
+            print(json.dumps(face_mapping, indent=2))
+
+            db.session.bulk_update_mappings(FaceEmbedding, face_mapping)
+
+            db.session.flush()
         return 0
     except Exception as e:
         print(e)

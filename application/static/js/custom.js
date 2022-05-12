@@ -121,6 +121,15 @@ $(document).ready(function () {
      */
   });
 
+  $('.profile_delete').on('click', function() {
+    if(confirm("Are you confirm to delete this photo?")) {
+      var id = $(this).prop('id');
+      window.location.href='delete/' + id
+    } else {
+      return false
+    }
+  });
+
   $('#deleteBtn').click(() => {
     if ($('li.selected').length > 0) {
       if(confirm("Are you confirm to delete these photos?")) {

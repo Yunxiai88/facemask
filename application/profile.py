@@ -3,6 +3,7 @@ import json
 import pathlib
 from . import db
 from sqlalchemy import null
+from datetime import datetime
 
 from .models import IndividualPhoto, FaceEmbedding
 from application import util, users, photos, face_model, face_embeddings
@@ -59,8 +60,13 @@ def delete_face(indvId):
     result_message = ""
 
     try:
+        print('deleting individual id: ', indvId)
         #step1: delete from db
         indvPhoto = IndividualPhoto.query.get(indvId)
+        if not indvPhoto:
+            raise Exception("this person not exist. ")
+        indvPhoto.deleted_at = datetime.now()
+
         db.session.delete(indvPhoto)
         db.session.flush()
         print("1 --> delete individual photo [{}] from db.".format(indvId))
@@ -125,6 +131,7 @@ def upload_face():
                 raise Exception(data["message"])
 
             #check whehter same embedding with different id exist
+            print('checking same person with id beginning...')
             individuals = photos.get_all_indv_photos()
             matched_ids = face_model.match_face_embedding (
                 [util.convert_embedding(ind.embedding) for ind in individuals], 
@@ -132,8 +139,12 @@ def upload_face():
                 individuals
             )
 
-            if matched_ids and current_user.id != matched_ids[0]:
-                raise Exception("same person used by different account, Please try another one.")
+            if matched_ids:
+                filter_ids = [x for x in matched_ids if x != None]
+
+                if filter_ids and current_user.id not in filter_ids:
+                    raise Exception("same person used by different account, Please try another one.")
+            print('checking same person with id end...\n')
 
             #step2: save file to disk
             upload_path = os.path.join(current_app.config['UPLOAD_FOLDER_INDV'], current_user.email)
@@ -153,26 +164,9 @@ def upload_face():
                 raise Exception("save individual info to database failed.")
             
             #step4: match in group face embending
-            try:
-                group_faces = face_embeddings.get_group_embeddings_by_indvId()
-                if group_faces:
-                    known_face_encodings = [util.convert_embedding(f.embedding) for f in group_faces]
-                    face_encoding_to_check = util.convert_embedding(data["embedding"])
-
-                    match_labels = face_model.is_face_matching(known_face_encodings, face_encoding_to_check)
-                    print("match labels: ", match_labels)
-
-                    face_mapping = [{
-                        'id':face.id, 
-                        'pred_indv_id': indvPhoto.id if match_labels[idx] == True else None} for idx, face in enumerate(group_faces)]
-                    print(face_mapping)
-
-                    db.session.bulk_update_mappings(FaceEmbedding, face_mapping)
-            except Exception as ie:
-                print(ie)
-
-                error_message = "match individual photo with group photos failed."
-                raise Exception(error_message)
+            res = face_embeddings.update_faceembedding_with_matched_embedding(indvPhoto, data["embedding"])
+            if res == 1:
+                raise Exception("match individual photo with group photos failed.")
 
             #step5: update individual table witn new id
             if indvId:

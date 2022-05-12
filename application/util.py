@@ -131,7 +131,7 @@ def get_mask(original_image, mask_image, top, right, bottom, left):
     ones = np.ones((original_image.shape[0], original_image.shape[1]))*255
     alpha_original_image = np.dstack([original_image, ones])
 
-    resized_mask_image = cv2.resize(mask_image, (bottom - top, right - left))
+    resized_mask_image = cv2.resize(mask_image, (right - left, bottom - top))
 
     alpha_mask_image = resized_mask_image[:, :, 3] / 255.0
     alpha_mask_image_1 = 1 - alpha_mask_image

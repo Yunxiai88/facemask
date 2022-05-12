@@ -36,6 +36,13 @@ def get_all_indv_photos(user_id=None):
         print(e)
         return 1
 
+def get_indv_photo_by_id(indv_id):
+    try:
+        return IndividualPhoto.query.get(indv_id)
+    except Exception as e:
+        print(e)
+        return None
+
 def delete_indv_photos(indv_id):
     try:
         IndividualPhoto.query.filter_by(id = indv_id).delete()
@@ -115,6 +122,15 @@ def get_grp_photo_by_indvId(indv_id_list):
     try:
         grp_photo = GroupPhoto.query.filter(GroupPhoto.face_embeddings.any(FaceEmbedding.pred_indv_id.in_(indv_id_list))).all()
         print("there are {0} photos".format(len(grp_photo)))
+        return grp_photo
+    except Exception as e:
+        print(e)
+        return None
+
+def get_unmatch_grp_photo():
+    try:
+        grp_photo = GroupPhoto.query.filter(GroupPhoto.face_embeddings.any(FaceEmbedding.pred_indv_id == None)).all()
+        print("there are {0} un-processed photos".format(len(grp_photo)))
         return grp_photo
     except Exception as e:
         print(e)
