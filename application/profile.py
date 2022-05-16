@@ -120,11 +120,11 @@ def delete_face(indvId):
 @login_required
 def upload_face():
     if request.method == "POST":
+        indvId = request.form['indvId']
+        username = request.form['username']
+        file = request.files['faceFile']
+        
         try:
-            indvId = request.form['indvId']
-            username = request.form['username']
-            file = request.files['faceFile']
-
             #step1: get face embending
             data = face_model.get_embedding(file)
             if data["code"] != "0":

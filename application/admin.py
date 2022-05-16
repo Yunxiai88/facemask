@@ -2,7 +2,7 @@ import os
 import pathlib
 
 from . import db
-from application import photos, util, face_model
+from application import photos, util, face_model, face_embeddings
 from .models import GroupPhoto, FaceEmbedding
 from asyncio.windows_events import NULL
 
@@ -150,3 +150,21 @@ def query_file(photoId):
     upload_path = os.path.join(path.parent.parent, file_path)
 
     return send_from_directory(upload_path, file_name)
+
+@admin.route('/compile_predictions')
+@login_required
+def compile_predictions():
+    all_detected_faces = face_embeddings.get_all_face_embeddings()
+    result = {}
+    for face in all_detected_faces:
+        pred = {
+            'bbox': util.convert_bbox(face.face_bbox),
+            'pred_indv_id': face.individual_photo.id if face.pred_indv_id else 0,
+            'pred_indv_name': face.individual_photo.name if face.pred_indv_id else 0
+        }
+        filename = os.path.split(face.group_photo.file_path)[1]
+        if filename in result:
+            result[filename].append(pred)
+        else:
+            result[filename] = [pred]
+    return result

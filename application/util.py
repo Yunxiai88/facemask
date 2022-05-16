@@ -140,3 +140,18 @@ def get_mask(original_image, mask_image, top, right, bottom, left):
         original_image[top:bottom, left:right, c] = ((alpha_mask_image_1 * alpha_original_image[top:bottom, left:right, c]) + (alpha_mask_image * resized_mask_image[:, :, c]))
     
     return original_image
+
+def has_duplicates(data_dict):
+    seen = set()
+    conflicting_data = {}
+    for key, lst in data_dict.items():
+        for l in lst:
+            if l in seen:
+                if l in conflicting_data:
+                    conflicting_data[l].append(key)
+                else:
+                    conflicting_data[l] = [key]
+
+            else:
+                seen.add(l)
+    return conflicting_data

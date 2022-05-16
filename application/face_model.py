@@ -158,9 +158,9 @@ def clustering_group_photos(admin_id):
             raise Exception("Saving clustering results to DB failed.")
 
         # update individual id back to face_embdding table
-        res = face_embeddings.update_face_embedding(emb_ids, pred_ids)
-        if res == 1:
-            raise Exception("Update back to face embdding failed.")
+        # res = face_embeddings.update_face_embedding(emb_ids, pred_ids)
+        # if res == 1:
+        #     raise Exception("Update back to face embdding failed.")
 
         return 0
 
@@ -185,6 +185,14 @@ def match_face_embedding(known_face_encodings, face_encoding_to_check, individua
 ###########################################################################
 def is_face_matching(known_face_encodings, face_encoding_to_check, tolerance=0.6):
     match_label = face_recognition.compare_faces(known_face_encodings, face_encoding_to_check, tolerance)
+    return match_label
+
+###########################################################################
+# Get the distance of face encoding against a list of know face encodings
+#
+###########################################################################
+def face_distance(known_face_encodings, face_encoding_to_check):
+    match_label = face_recognition.face_distance(known_face_encodings, face_encoding_to_check)
     return match_label
 
 ###########################################################################
