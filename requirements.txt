@@ -5,6 +5,7 @@ flask
 flask-login
 flask-sqlalchemy
 cmake
+dlib
 face_recognition
 opencv-python
 scikit-learn
