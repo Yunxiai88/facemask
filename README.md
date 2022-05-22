@@ -1,48 +1,44 @@
-# Face Mask
+## SECTION 1 : PROJECT TITLE
+## Photo Face Sorter And Anonymizer
 
-Application used to mask faces base on uploaed image.
+<img src="SystemCode/facemask/application/static/img/cover_pic.png"
+     style="float: left; margin-right: 0px;" />
 
-# Technology
-* Python: 3.7
-* Flask
-* libraries like pandas, numpy
+---
 
-## Configuration
-* 1. create a virtual environment:
-    ```
-    conda create -n facemask python=3.7
-    ```
+## SECTION 2 : EXECUTIVE SUMMARY / PAPER ABSTRACT
+In the current digital era, where photographs are shared digitally, there is growing concern for sharing them publicly. Nowadays, there is more potential to misuse someone’s face with deepfakes and face spoofing. Hence in many institutions like kindergartens and schools, they address it with most care to share students’ pictures with concerned parties only. 
+Presently, the institutions make an effort to not share their student’s' photographs with everyone. They share photos of kids to their respective parents only. However, the parents are still able to view other kids, who are present in those photos, together with their own.
 
-* 2. activate newly created environment:
-    ```
-    conda activate facemask
-    ```
+In institutions like kindergartens, the number of pictures the teachers click every day on each student’s activities is too many. If it’s an individual activity, they make sure to capture only one student in each photo. But with activities involving multiple children, they don’t have the time to capture a single child in each picture. So even though they share the picture of each child with their parents, they end up sharing some pictures of group activities with many children, which ends up as a privacy concern.
 
-* 3. In the virtual environment, Go to the project root folder and run below command to install packages:
-    ```
-    pip install -r requirements.txt  
-    ```
+The current approach of teachers manually sorting the pictures of each child in the bunch of photos taken every month is very time consuming. The sheer number of pictures taken makes it difficult too. Hence there is always potential for human error resulting in sharing of photographs to unintended recipients and failure to share with the intended recipient.
 
-     If any packages fail to install, try installing individually
-     If any errors, try to do this one more time to avoid packages being missed out
+Our team aims to create an efficient intelligent system that automates the tedious, time-consuming task of sharing particular photographs with concerned parties.
 
-* 4. Create Tables (optional)
-    ```python
-    python create_table.py
-    ```
+---
+## SECTION 3 : CREDITS / PROJECT CONTRIBUTION
 
-## Start web application
- Go to SystemCode folder then run below command
-```python
-python main.py --ip 127.0.0.1 --port 8000
-```
-## References
-*  Ageitgey, (2022 Mar 10). Face Recognition. Retrieved from https://github.com/ageitgey/face_recognition 
- 
-*  Cardano-max, (2022 Apr 04). Find faces in pictures. Retrieved from https://deepnote.com/@cardano-max/Face-Recognition-1c4ca171-5e58-4d2c-b6a9-7904402a65c0
- 
-*  Mohammed Maheer, (2022 Apr 04). Face Recognition Using ‘face_recognition’ API. Retrieved from https://medium.com/analytics-vidhya/face-recognition-using-face-recognition-api-e7fa4dcabbc3
- 
-*  Vimsky.com, (2022 Apr 04). Python face_recognition.compare_faces. Retrieved from https://vimsky.com/zh-tw/examples/detail/python-method-face_recognition.compare_faces.html
+| Official Full Name  | Student ID (MTech Applicable)  | Work Items (Who Did What) | Email (Optional) |
+| :------------ |:---------------:| :-----| :-----|
+| Ankeit Taksh | A1234567A | Project Proposal, Data Acquisition, Modeling, System integration Test, Models Performance assessment, Report Writing | e0508597@u.nus.edu |
+| Sindhuja Kumaran | A0213537J | System Architecture Design, Data Modeling, Project development, Data Collection,  Model Performance assessment, Report Writing, Video Creation | e0508638@u.nus.edu |
+| Zhu Weiwei | A0213545L | System design, Knowledge discovery, Project development, Feature implementation, Report Writing, Video Creation | e0508646@u.nus.edu |
 
+---
 
+## SECTION 4 : VIDEO OF SYSTEM MODELLING & USE CASE DEMO
+
+https://drive.google.com/file/d/1ANPV6P5WtbqXwoUuuY5EkMlWE6OqI-lC/view?usp=sharing
+
+---
+
+## SECTION 5 : USER GUIDE
+
+`Refer to appendix <Installation & User Guide> in project report at Github Folder: ProjectReport`
+
+---
+
+## SECTION 6 : PROJECT REPORT / PAPER
+
+`Refer to project report at Github Folder: ProjectReport`
