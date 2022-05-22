@@ -41,4 +41,4 @@ https://drive.google.com/file/d/1ANPV6P5WtbqXwoUuuY5EkMlWE6OqI-lC/view?usp=shari
 
 ## SECTION 6 : PROJECT REPORT / PAPER
 
-`Refer to project report at Github Folder: ProjectReport`
+https://github.com/Yunxiai88/facemask/tree/main/ProjectReport
