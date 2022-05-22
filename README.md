@@ -1,7 +1,7 @@
 ## SECTION 1 : PROJECT TITLE
 ## Photo Face Sorter And Anonymizer
 
-<img src="SystemCode/facemask/application/static/img/cover_pic.png"
+<img src="https://github.com/Yunxiai88/facemask/blob/main/SystemCode/application/static/img/cover_pic.png"
      style="float: left; margin-right: 0px;" />
 
 ---
