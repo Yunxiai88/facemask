@@ -32,6 +32,7 @@ Application used to mask faces base on uploaed image.
     ```
 
 ## Start web application
+ go to systemcode folder then run below command
 ```python
 python main.py --ip 127.0.0.1 --port 8000
 ```
