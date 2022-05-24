@@ -35,7 +35,7 @@ https://drive.google.com/file/d/1ANPV6P5WtbqXwoUuuY5EkMlWE6OqI-lC/view?usp=shari
 
 ## SECTION 5 : USER GUIDE
 
-`Refer to appendix <Installation & User Guide> in project report at Github Folder: ProjectReport`
+https://github.com/Yunxiai88/facemask/blob/main/Userguide/Photo-Face-Sorter-And-Anonymizer-UserGuide.docx
 
 ---
 
