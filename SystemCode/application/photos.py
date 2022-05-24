@@ -86,7 +86,6 @@ def save_GroupPhotos(file_paths, admin_id):
 def get_grp_photo(grp_photo_id):
     try:
         grp_photo = GroupPhoto.query.filter_by(id=grp_photo_id).first()
-        print("group photo - ", grp_photo.id)
         return grp_photo
     except Exception as e:
         print(e)

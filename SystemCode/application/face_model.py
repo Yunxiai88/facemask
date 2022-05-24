@@ -83,18 +83,17 @@ def clustering_group_photos(admin_id):
     
     try:
         # cluster embeddings
-        clt = DBSCAN(eps=0.55, metric="euclidean")
+        clt = DBSCAN(eps=0.5, metric="euclidean", n_jobs=2)
         clt.fit(all_embeddings)
 
         # determine the total number of unique faces found in the dataset
         all_labels = clt.labels_
         clusterIDs = np.unique(all_labels)
-        print('all cluster labels: ', all_labels)
-        print('existing embedding ids: ', emb_ids)
-        print('existing individul ids: ', pred_ids)
 
         unique_faces = np.where(all_labels > -1)[0]
-        print('number of faces found: ', len(unique_faces))
+        print('[INFO] number of faces found: ', len(unique_faces))
+        print('[INFO] cluster labels: ', all_labels)
+        print('[INFO] existing face ids: ', pred_ids)
 
         #all individual faces
         individuals = photos.get_all_indv_photos()
@@ -104,7 +103,6 @@ def clustering_group_photos(admin_id):
         unknown_faces = np.where(all_labels == -1)[0]
         for f in unknown_faces:
             grp_image_path = img_pths[f]
-            
             grp_image = cv2.imread(grp_image_path)
             [top, right, bottom, left] = bboxes[f]
             roi = grp_image[top:bottom, left:right]
@@ -114,37 +112,30 @@ def clustering_group_photos(admin_id):
             if not face:
                 no_face_index.append(f)
             else:
+                if pred_ids[f]: continue
+
                 #match with existing faces
                 matched_id = match_face_embedding([util.convert_embedding(ind.embedding) for ind in individuals], all_embeddings[f], individuals)
                 if matched_id:
                     pred_ids[f] = matched_id
-        print("no face index: ", no_face_index)
-        print('updated individual ids for unknow: ', pred_ids)
+        print('[INFO] updated individual ids for unknow: ', pred_ids)
 
         matchingExist = False
         #match with existing face
         for labelID in clusterIDs:
+            print("[INFO] faces for face ID: {}".format(labelID))
             if labelID == -1:
                 continue
 
             idxs = np.where(clt.labels_ == labelID)[0]
-            print('lable: ', labelID, ' -- its indx: ', idxs)
+            for k in idxs:
+                if pred_ids[k]: continue
 
-            #set value
-            pred_val = [pred_ids[i] for i in idxs if pred_ids[i]]
-            if pred_val:
-                for j in idxs:
-                    pred_ids[j] = pred_val[0]
-            else:
-                #individual faces
-                matched_id = match_face_embedding([util.convert_embedding(ind.embedding) for ind in individuals], all_embeddings[idxs[0]], individuals)
+                #match with existing faces
+                matched_id = match_face_embedding([util.convert_embedding(ind.embedding) for ind in individuals], all_embeddings[k], individuals)
                 if matched_id:
-                    for k in idxs:
-                        pred_ids[k] = matched_id
-            matchingExist = True
-        
-        if matchingExist == True:
-            print('updated individual ids for knowing: ', pred_ids)
+                    pred_ids[k] = matched_id
+        print('[INFO] updated individual ids for knowing: ', pred_ids)
 
         emb_ids = util.delete_list_by_index(emb_ids, no_face_index)
         grp_ids = util.delete_list_by_index(grp_ids, no_face_index)
@@ -158,9 +149,9 @@ def clustering_group_photos(admin_id):
             raise Exception("Saving clustering results to DB failed.")
 
         # update individual id back to face_embdding table
-        # res = face_embeddings.update_face_embedding(emb_ids, pred_ids)
-        # if res == 1:
-        #     raise Exception("Update back to face embdding failed.")
+        res = face_embeddings.update_face_embedding(emb_ids, pred_ids)
+        if res == 1:
+            raise Exception("Update back to face embdding failed.")
 
         return 0
 
@@ -174,7 +165,6 @@ def match_face_embedding(known_face_encodings, face_encoding_to_check, individua
     matched_ids = [indvPhoto.id for idx, indvPhoto in enumerate(individuals) if match_labels[idx] == True]
     
     if matched_ids:
-        print('matched id: ', matched_ids[0])
         return matched_ids[0]
     else:
         return None
@@ -183,7 +173,7 @@ def match_face_embedding(known_face_encodings, face_encoding_to_check, individua
 # method to check face encoding against a list of know face encodings
 #
 ###########################################################################
-def is_face_matching(known_face_encodings, face_encoding_to_check, tolerance=0.6):
+def is_face_matching(known_face_encodings, face_encoding_to_check, tolerance=0.45):
     match_label = face_recognition.compare_faces(known_face_encodings, face_encoding_to_check, tolerance)
     return match_label
 

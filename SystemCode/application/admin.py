@@ -2,7 +2,7 @@ import os
 import pathlib
 
 from . import db
-from application import photos, util, face_model, face_embeddings
+from application import photos, util, face_model, face_embeddings, users
 from .models import GroupPhoto, FaceEmbedding
 from asyncio.windows_events import NULL
 
@@ -105,13 +105,24 @@ def delete():
                     raise Exception('delete group photo record from db failed')
 
                 grp_photos.append(group_photo)
-                
-            #step2: delete from disk
+
+            #step2: delete from input disk
             for photo in grp_photos:
                 file_name, file_path  = util.get_file_name_from_path(photo.file_path)
 
-                print("delete image --> ", file_name)
+                print("delete input image --> ", file_name)
                 os.remove(os.path.join(file_path, file_name))
+            
+            #step3: delete from processed disk
+            for photo in grp_photos:
+                for face in photo.face_embeddings:
+                    user = users.get_user_byid(face.pred_indv_id)
+                    print(user.email)
+                    processed_path = os.path.join(current_app.config['PROCESSED_FOLDER'], user.email)
+                    file_name, file_path  = util.get_file_name_from_path(processed_path)
+
+                    print("delete processed image --> ", file_name)
+                    os.remove(os.path.join(file_path, file_name))
 
             # confirm transaction
             db.session.commit()
