@@ -65,6 +65,8 @@ class IndividualPhoto(db.Model):
     updated_at = db.Column(db.DateTime(), nullable=False, default=datetime.now, onupdate=datetime.now)
     deleted_at = db.Column(db.DateTime(), nullable=True)
 
+    __table_args__ = (db.UniqueConstraint('id', 'name'),)
+
     # one-to-many
     face_embedding = db.relationship('FaceEmbedding', backref='individual_photo', lazy=True)
     cluster = db.relationship('Cluster', backref='individual_photo', lazy=True)

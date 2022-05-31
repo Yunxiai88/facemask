@@ -36,6 +36,18 @@ def get_all_indv_photos(user_id=None):
         print(e)
         return 1
 
+def get_indv_photos_name(name=None, user_id=None):
+    try:
+        query = IndividualPhoto.query.filter(IndividualPhoto.deleted_at == None)
+        if user_id:
+            query = query.filter(IndividualPhoto.user_id == user_id)
+        if name:
+            query = query.filter(IndividualPhoto.name == name)
+        return query.all()
+    except Exception as e:
+        print(e)
+        return 1
+
 def get_indv_photo_by_id(indv_id):
     try:
         return IndividualPhoto.query.get(indv_id)

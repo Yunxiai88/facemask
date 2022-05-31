@@ -293,10 +293,14 @@ button.send.selected:after {
 }
 
 .menu-size{
-    height: 200px;
-    overflow: scroll;
+  height: 200px;
+  overflow: scroll;
 }
 
+.table-image td,
+.table-image th {
+  vertical-align: middle;
+}
 
 /* navbar css definition start */
 .navbar-menu {

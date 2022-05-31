@@ -2,9 +2,11 @@ import os
 import json
 from . import db
 import numpy as np
+from datetime import datetime
+from itertools import groupby
+
 from application import face_model, util, photos
 from .models import FaceEmbedding, IndividualPhoto, GroupPhoto
-from datetime import datetime
 
 def get_faceEmbeddings(grp_photo_ids):
     face_embeddings = FaceEmbedding.query.filter(FaceEmbedding.grp_photo_id.in_(grp_photo_ids)).all()
@@ -64,13 +66,22 @@ def update_faceembedding_with_matched_embedding(indvPhoto, embedding):
         # get all face_embeddings of available group photos
         group_faces = get_all_face_embeddings()
         indv_faces = photos.get_all_indv_photos(indvPhoto.user_id)
-        known_face_encodings = [util.convert_embedding(f.embedding) for f in indv_faces]
+
+        # get average face embedding
+        known_face_encodings = []
+        individual_list = [individual for individual in indv_faces if individual.deleted_at is None]
+        sorted_individuals = sorted(individual_list, key=lambda indiv: indiv.name)
+
+        for k, v in groupby(sorted_individuals, key=lambda indiv: indiv.name):
+            known_face_encodings.append(np.mean([util.convert_embedding(f.embedding) for f in list(v)], axis=0))
+        print(known_face_encodings)
+        #known_face_encodings = [util.convert_embedding(f.embedding) for f in indv_faces]
 
         if group_faces:
             matched_data = {}
             
             group_faces_encodings = [util.convert_embedding(f.embedding) for f in group_faces]
-            for i,k_em in enumerate(known_face_encodings):
+            for i, k_em in enumerate(known_face_encodings):
                 match_labels = face_model.is_face_matching(group_faces_encodings, k_em)
             
                 if True in match_labels:

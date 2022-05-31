@@ -4,6 +4,7 @@ import pathlib
 from . import db
 from sqlalchemy import null
 from datetime import datetime
+from itertools import groupby
 
 from .models import IndividualPhoto, FaceEmbedding
 from application import util, users, photos, face_model, face_embeddings
@@ -19,25 +20,44 @@ path = pathlib.Path(__file__)
 @profile.route('/')
 @login_required
 def walk_face():
-    faces = current_user.uploaded_indv_photos
+    individuals = current_user.uploaded_indv_photos
 
-    face_list = []
+    append_obj = []
+    individual_list = []
+    grouped_individuals = []
 
-    if faces:
-        face_list = [face.id for face in faces if face.deleted_at is None]
-        print("All faces for current user: ", face_list)
+    if individuals:
+        individual_list = [individual for individual in individuals if individual.deleted_at is None]
+        sorted_individuals = sorted(individual_list, key=lambda indiv: indiv.name)
 
-    return render_template('profile.html', data=face_list, appends=2-len(face_list))
+        for k, v in groupby(sorted_individuals, key=lambda indiv: indiv.name):
+            temp = list(v)
+            for i in range(3 - len(temp)):
+                temp.append(IndividualPhoto(None, None, None, None, None))
+            grouped_individuals.append(([k, temp[0].id], temp))
+    
+    for i in range(2 - len(grouped_individuals)):
+        grouped_individuals.append((['', None], [None, None, None]))
+    
+    print("All profiles for current user: ", grouped_individuals)
 
-@profile.route('/upload')
+    return render_template('profile.html', data=grouped_individuals)
+
+@profile.route('/upload/<path:indvId>')
 @login_required
-def profile_page():
-    return render_template('face_image.html')
+def profile_page(indvId):
+    indvPhoto = None
+    if indvId and indvId != 'None':
+        indvPhoto = IndividualPhoto.query.get(indvId)
+        print(indvPhoto.name)
+    return render_template('face_image.html', data=indvPhoto, actionParam='add')
 
 @profile.route('/update/<path:indvId>')
 @login_required
 def update_face(indvId):
-    return render_template('face_image.html', indvId=indvId)
+    if indvId:
+        indvPhoto = IndividualPhoto.query.get(indvId)
+    return render_template('face_image.html', data=indvPhoto, actionParam='update')
 
 @profile.route('/query/<path:indvId>')
 @login_required
@@ -122,6 +142,7 @@ def upload_face():
     if request.method == "POST":
         indvId = request.form['indvId']
         username = request.form['username']
+        actionParam = request.form['actionParam']
         file = request.files['faceFile']
         
         try:
@@ -139,8 +160,12 @@ def upload_face():
                 individuals
             )
 
+            filter_ids = []
             if matched_ids:
-                filter_ids = [x for x in matched_ids if x != None]
+                for x in matched_ids:
+                    if x != None:
+                        individual = IndividualPhoto.query.get(x)
+                        filter_ids.append(individual.user_id)
 
                 if filter_ids and current_user.id not in filter_ids:
                     raise Exception("same person used by different account, Please try another one.")
@@ -170,9 +195,10 @@ def upload_face():
 
             #step5: update individual table witn new id
             if indvId:
-                res = photos.defunct_indv_photos(indvId)
-                if res == 1:
-                    raise Exception('update individual table failed.')
+                if actionParam == 'update':
+                    res = photos.defunct_indv_photos(indvId)
+                    if res == 1:
+                        raise Exception('update individual table failed.')
 
                 # update face_embedding table witn new id
                 res = face_embeddings.update_pred_indv_id(indvId, indvPhoto.id)
@@ -198,5 +224,5 @@ def upload_face():
 
             flash("System Error. Please contact administrator.")
 
-            return redirect(url_for("profile.profile_page"))
+            return redirect(url_for("profile.profile_page", indvId=indvId))
 

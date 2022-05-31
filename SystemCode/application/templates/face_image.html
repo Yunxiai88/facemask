@@ -16,7 +16,8 @@
     <br>
 
     <form id="faceForm" action="/profile/upload" method="POST" enctype="multipart/form-data">
-        <input type="hidden" name="indvId" id="indvId" value={{indvId}} /> 
+        <input type="hidden" name="indvId" id="indvId" value={{data.id}} />
+        <input type="hidden" name="actionParam" id="actionParam" value={{actionParam}} /> 
 
         <div class="col-6 offset-3">
             <div class="row text-left">
@@ -24,7 +25,11 @@
                     <label for="username">Name</label>
                 </div>
                 <div class="col-10">
-                    <input type="text" class="form-control" name="username" id="username" placeholder="Please Enter Your Name" required />
+                    {% if data %}
+                        <input type="text" class="form-control" name="username" id="username" readonly value="{{data.name}}" placeholder="Please Enter Your Name" required />
+                    {% else %}
+                        <input type="text" class="form-control" name="username" id="username" placeholder="Please Enter Your Name" required />
+                    {% endif %}
                 </div>
             </div>
             

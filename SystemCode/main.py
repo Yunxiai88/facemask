@@ -32,6 +32,9 @@ def index():
     if current_user.uploaded_indv_photos:
 
         face_list = [face.id for face in current_user.uploaded_indv_photos if face.deleted_at is None]
+        
+        if len(face_list) > 2:
+            face_list = face_list[0:2]
         print("individual photo ids: ", face_list)
 
         # return to index template

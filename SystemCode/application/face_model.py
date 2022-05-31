@@ -117,7 +117,7 @@ def clustering_group_photos(admin_id):
                 #match with existing faces
                 matched_id = match_face_embedding([util.convert_embedding(ind.embedding) for ind in individuals], all_embeddings[f], individuals)
                 if matched_id:
-                    pred_ids[f] = matched_id
+                    pred_ids[f] = matched_id[0]
         print('[INFO] updated individual ids for unknow: ', pred_ids)
 
         matchingExist = False
@@ -134,7 +134,7 @@ def clustering_group_photos(admin_id):
                 #match with existing faces
                 matched_id = match_face_embedding([util.convert_embedding(ind.embedding) for ind in individuals], all_embeddings[k], individuals)
                 if matched_id:
-                    pred_ids[k] = matched_id
+                    pred_ids[k] = matched_id[0]
         print('[INFO] updated individual ids for knowing: ', pred_ids)
 
         emb_ids = util.delete_list_by_index(emb_ids, no_face_index)
@@ -164,10 +164,7 @@ def match_face_embedding(known_face_encodings, face_encoding_to_check, individua
     match_labels = is_face_matching(known_face_encodings, face_encoding_to_check)
     matched_ids = [indvPhoto.id for idx, indvPhoto in enumerate(individuals) if match_labels[idx] == True]
     
-    if matched_ids:
-        return matched_ids[0]
-    else:
-        return None
+    return matched_ids
 
 ###########################################################################
 # method to check face encoding against a list of know face encodings
@@ -202,8 +199,16 @@ def mark_face(indv_ids):
     match_labels = face_model.is_face_matching(known_face_encodings, util.convert_embedding(ind.embedding))
     print("match labels: ", match_labels)
 
+    # get all id of same person
+    new_ids = []
+    for idx in indv_ids:
+        individual = photos.get_indv_photo_by_id(idx)
+        persons = photos.get_indv_photos_name(individual.name, individual.user_id)
+        for p in persons:
+            new_ids.append(p.id)
+    print('new form ids: ', new_ids)
 
-    group_photos = photos.get_grp_photo_by_indvId(indv_ids)
+    group_photos = photos.get_grp_photo_by_indvId(new_ids)
     photo_ids = [util.get_file_name_from_path(photo.file_path)[0] for photo in group_photos]
 
     # check whether id has been processed before
@@ -211,15 +216,16 @@ def mark_face(indv_ids):
     if processed_ids:
         print("photos of persons:{0} have been processed: ".format(processed_ids))
 
-        need_process_ids = [ind for ind in indv_ids if ind not in processed_ids]
+        need_process_ids = [ind for ind in new_ids if ind not in processed_ids]
         if not need_process_ids:
-            return photo_ids
+            print('--------------')
+            #return photo_ids
         else:
-            indv_ids = need_process_ids
+            new_ids = need_process_ids
             session["processed_ids"] = processed_ids.append(need_process_ids)
             print("will process photos for persons:{0}".format(need_process_ids))
     else:
-        session["processed_ids"] = indv_ids
+        session["processed_ids"] = new_ids
     
     # process filter photos
     if group_photos:
@@ -234,7 +240,7 @@ def mark_face(indv_ids):
 
             embeddings = photo.face_embeddings
             for face in embeddings:
-                if str(face.pred_indv_id) not in indv_ids:
+                if face.pred_indv_id not in new_ids:
                     [top, right, bottom, left] = util.convert_bbox(face.face_bbox)
 
                     # option 1: blur faces
