@@ -212,20 +212,21 @@ def mark_face(indv_ids):
     photo_ids = [util.get_file_name_from_path(photo.file_path)[0] for photo in group_photos]
 
     # check whether id has been processed before
+    """
     processed_ids = session.get("processed_ids")
     if processed_ids:
         print("photos of persons:{0} have been processed: ".format(processed_ids))
 
         need_process_ids = [ind for ind in new_ids if ind not in processed_ids]
         if not need_process_ids:
-            print('--------------')
-            #return photo_ids
+            return photo_ids
         else:
             new_ids = need_process_ids
             session["processed_ids"] = processed_ids.append(need_process_ids)
             print("will process photos for persons:{0}".format(need_process_ids))
     else:
         session["processed_ids"] = new_ids
+    """
     
     # process filter photos
     if group_photos:

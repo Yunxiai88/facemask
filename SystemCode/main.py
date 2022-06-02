@@ -8,6 +8,7 @@ import argparse
 from glob import glob
 from io import BytesIO
 from zipfile import ZipFile
+from itertools import groupby
 
 from flask_login import login_required, current_user
 from flask import Blueprint, Flask, current_app
@@ -30,8 +31,14 @@ def error():
 def index():
     # check whether face embedding existing in db
     if current_user.uploaded_indv_photos:
+        face_list = []
 
-        face_list = [face.id for face in current_user.uploaded_indv_photos if face.deleted_at is None]
+        profile_list = [profile for profile in current_user.uploaded_indv_photos if profile.deleted_at is None]
+        sorted_profiles = sorted(profile_list, key=lambda indiv: indiv.name)
+        for k, v in groupby(sorted_profiles, key=lambda indiv: indiv.name):
+            face_list.append(list(v)[0].id)
+        
+        print("there are ", len(face_list), ' profile photos')
         
         if len(face_list) > 2:
             face_list = face_list[0:2]
