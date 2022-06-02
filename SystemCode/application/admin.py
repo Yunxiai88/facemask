@@ -163,14 +163,15 @@ def query_file(photoId):
     return send_from_directory(upload_path, file_name)
 
 @admin.route('/compile_predictions')
-@login_required
+# @login_required
 def compile_predictions():
     all_detected_faces = face_embeddings.get_all_face_embeddings()
     result = {}
+    id = {'A':1, 'B':2, 'C':3, 'D':4, 'E':5, 'F':6, 'G':7, 'H':8, 'I':9, 'J':10}
     for face in all_detected_faces:
         pred = {
             'bbox': util.convert_bbox(face.face_bbox),
-            'pred_indv_id': face.individual_photo.id if face.pred_indv_id else 0,
+            'pred_indv_id': id[face.individual_photo.name] if face.pred_indv_id else 0,
             'pred_indv_name': face.individual_photo.name if face.pred_indv_id else 0
         }
         filename = os.path.split(face.group_photo.file_path)[1]

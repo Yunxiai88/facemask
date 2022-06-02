@@ -68,14 +68,16 @@ def update_faceembedding_with_matched_embedding(indvPhoto, embedding):
         indv_faces = photos.get_all_indv_photos(indvPhoto.user_id)
 
         # get average face embedding
-        known_face_encodings = []
-        individual_list = [individual for individual in indv_faces if individual.deleted_at is None]
-        sorted_individuals = sorted(individual_list, key=lambda indiv: indiv.name)
+        # known_face_encodings = []
+        # individual_list = [individual for individual in indv_faces if individual.deleted_at is None]
+        # sorted_individuals = sorted(individual_list, key=lambda indiv: indiv.name)
+        # print('sorted_individuals --------')
+        # print(sorted_individuals)
 
-        for k, v in groupby(sorted_individuals, key=lambda indiv: indiv.name):
-            known_face_encodings.append(np.mean([util.convert_embedding(f.embedding) for f in list(v)], axis=0))
-        print(known_face_encodings)
-        #known_face_encodings = [util.convert_embedding(f.embedding) for f in indv_faces]
+        # for k, v in groupby(sorted_individuals, key=lambda indiv: indiv.name):
+        #     known_face_encodings.append(np.mean([util.convert_embedding(f.embedding) for f in list(v)], axis=0))
+        # print(known_face_encodings)
+        known_face_encodings = [util.convert_embedding(f.embedding) for f in indv_faces]
 
         if group_faces:
             matched_data = {}
